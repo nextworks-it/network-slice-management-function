@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,7 @@ public class NsmfRestController {
 	@Value("${sebastian.admin}")
 	private String adminTenant;
 
-	@Value("${nsmf.local_domain_id:LOCAL}")
-	private String localDomainId;
+
 	
 	private static String getUserFromAuth(Authentication auth) {
 		Object principal = auth.getPrincipal();
@@ -140,6 +140,35 @@ public class NsmfRestController {
 		}
 	}
 
+
+	@ApiOperation(value = "Get all the Network Slice Instances")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "The list of Network Slice Instances.", response = NetworkSliceInstance.class, responseContainer = "Set"),
+			//@ApiResponse(code = 400, message = "The request contains elements impossible to process", response = ResponseEntity.class),
+			//@ApiResponse(code = 409, message = "There is a conflict with the request", response = ResponseEntity.class),
+			//@ApiResponse(code = 500, message = "Status 500", response = ResponseEntity.class)
+
+	})
+	@ResponseStatus(HttpStatus.OK)
+	@RequestMapping(value = "/nss", method = RequestMethod.GET)
+	public ResponseEntity<?> getNssInstance(Authentication auth) {
+		log.debug("Received query for all network slice subnet instances.");
+		try {
+			String tenantId = getUserFromAuth(auth);
+			Map<String, String> parameters = new HashMap<String, String>();
+			Filter filter = new Filter(parameters);
+			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
+			List<NetworkSliceSubnetInstance> nsis = nsLcmService.queryNetworkSliceSubnetInstance(query,  tenantId);
+			return new ResponseEntity<List<NetworkSliceSubnetInstance>>(nsis, HttpStatus.OK);
+		} catch (MalformattedElementException e) {
+
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (Exception e) {
+
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	@ApiOperation(value = "Get all the Network Slice Instance IDSs")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "The list of Network Slice Instances IDS.", response = String.class, responseContainer = "Set"),
@@ -213,6 +242,28 @@ public class NsmfRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
 		} catch (Exception e) {
 			log.error("NS termination failed due to internal errors.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+
+	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.PUT)
+	public ResponseEntity<?> notifyNssiStatusChange(@PathVariable String nssiId, @RequestBody NotifyNssiStatusChange request, Authentication auth) {
+
+		log.debug("Received request to instantiate network slice " + nssiId);
+		try {
+
+			nsLcmService.notifyNssStatusChange(request);
+			return new ResponseEntity<>(HttpStatus.ACCEPTED);
+		} catch (NotExistingEntityException e) {
+			log.error("NSS Status Change Notification failed due to missing elements in DB.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (MalformattedElementException e) {
+			log.error("NSS Status Change Notification failed due to bad-formatted request.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+
+		} catch (Exception e) {
+			log.error("NS instantiation failed due to internal errors.");
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

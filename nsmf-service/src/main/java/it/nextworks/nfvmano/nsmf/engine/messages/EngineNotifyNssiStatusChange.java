@@ -18,11 +18,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssStatusChange;
 
+import java.util.UUID;
 
-public class NotifyNssiStatusChange extends NsmfEngineMessage {
 
-	@JsonProperty("nfvNsiId")
-	private String nfvNsiId;
+public class EngineNotifyNssiStatusChange extends NsmfEngineMessage {
+
+	@JsonProperty("nssiId")
+	private UUID nssiId;
 	
 	@JsonProperty("statusChange")
 	private NssStatusChange statusChange;
@@ -31,25 +33,23 @@ public class NotifyNssiStatusChange extends NsmfEngineMessage {
 	private boolean isSuccessful;
 	
 	/**
-	 * @param nfvNsiId
+	 * @param nssiId
 	 * @param statusChange
 	 * @param successful
 	 */
 	@JsonCreator
-	public NotifyNssiStatusChange(@JsonProperty("nfvNsiId") String nfvNsiId,
-								  @JsonProperty("statusChange") NssStatusChange statusChange,
-								  @JsonProperty("successful") boolean successful) {
+	public EngineNotifyNssiStatusChange(@JsonProperty("nssiId") UUID nssiId,
+										@JsonProperty("statusChange") NssStatusChange statusChange,
+										@JsonProperty("successful") boolean successful) {
 		this.type = NsmfEngineMessageType.NOTIFY_NSSI_STATUS_CHANGE;
-		this.nfvNsiId = nfvNsiId;
+		this.nssiId = nssiId;
 		this.statusChange = statusChange;
 		this.isSuccessful = successful;
 	}
 
-	/**
-	 * @return the nfvNsiId
-	 */
-	public String getNfvNsiId() {
-		return nfvNsiId;
+
+	public UUID getNssiId() {
+		return nssiId;
 	}
 
 	/**

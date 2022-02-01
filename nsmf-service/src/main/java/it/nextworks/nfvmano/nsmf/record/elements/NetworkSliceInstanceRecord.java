@@ -3,6 +3,7 @@ package it.nextworks.nfvmano.nsmf.record.elements;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceInstance;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -14,8 +15,11 @@ public class NetworkSliceInstanceRecord {
     @GeneratedValue
     private UUID id;
 
-    @ManyToMany
-    private Set<NetworkSliceSubnetInstanceRecord> networkSliceSubnetInstances;
+    @OneToMany(
+            fetch = FetchType.EAGER,
+            cascade = CascadeType.ALL
+    )
+    private List<NetworkSliceSubnetInstanceRecord> networkSliceSubnetInstances = new ArrayList<>();
 
     private String nstId;
 
@@ -31,19 +35,22 @@ public class NetworkSliceInstanceRecord {
     public NetworkSliceInstanceRecord() {
     }
 
-    public NetworkSliceInstanceRecord(Set<NetworkSliceSubnetInstanceRecord> networkSliceSubnetInstances,
+    public NetworkSliceInstanceRecord(List<NetworkSliceSubnetInstanceRecord> networkSliceSubnetInstances,
                                       String nstId,
                                       String vsInstanceId,
                                       NetworkSliceInstanceRecordStatus status,
                                       String tenantId) {
-        this.networkSliceSubnetInstances = networkSliceSubnetInstances;
+        if(networkSliceSubnetInstances!=null){
+            this.networkSliceSubnetInstances = networkSliceSubnetInstances;
+        }
+
         this.nstId = nstId;
         this.vsInstanceId = vsInstanceId;
         this.status=status;
         this.tenantId= tenantId;
     }
 
-    public Set<NetworkSliceSubnetInstanceRecord> getNetworkSliceSubnetInstanceIds() {
+    public List<NetworkSliceSubnetInstanceRecord> getNetworkSliceSubnetInstanceIds() {
         return networkSliceSubnetInstances;
     }
 
@@ -69,11 +76,14 @@ public class NetworkSliceInstanceRecord {
 
     public NetworkSliceInstance getNetworkSliceInstance(){
         return new NetworkSliceInstance(this.id, this.getNetworkSliceSubnetInstanceIds().stream()
-                .map(e -> e.getId())
-                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString()  );
+                .map(e -> e.getNssiIdentifier())
+                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString(),nstId  );
     }
 
 
+    public void addNetworkSliceSubnetInstance(NetworkSliceSubnetInstanceRecord subnetInstanceRecord){
+        networkSliceSubnetInstances.add(subnetInstanceRecord);
+    }
     public void setStatus(NetworkSliceInstanceRecordStatus status) {
         this.status = status;
     }

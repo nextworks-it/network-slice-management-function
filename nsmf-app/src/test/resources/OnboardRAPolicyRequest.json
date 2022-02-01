@@ -1,6 +1,7 @@
 {
   "resourceAllocationPolicy":{
     "nstId": "nst_test_e2e",
-    "algorithmType": "STATIC"
+    "algorithmType": "STATIC",
+    "isDefault":"true"
   }
 }

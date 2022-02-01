@@ -27,6 +27,13 @@ public enum NetworkSliceInstanceRecordStatus {
             return NetworkSliceInstanceStatus.INSTANTIATING;
         }
     },
+
+    INSTANTIATING_RAN_SUBNET{
+        @Override
+        public NetworkSliceInstanceStatus asNsiStatus() {
+            return NetworkSliceInstanceStatus.INSTANTIATING;
+        }
+    },
     INSTANTIATING_APP_SUBNET{
         @Override
         public NetworkSliceInstanceStatus asNsiStatus() {

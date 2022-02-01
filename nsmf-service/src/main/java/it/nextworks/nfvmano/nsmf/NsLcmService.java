@@ -27,22 +27,28 @@ import it.nextworks.nfvmano.libs.ifa.templates.nst.NST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceInstance;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssStatusChange;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NssiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.CreateNsiIdRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.InstantiateNsiRequest;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.NotifyNssiStatusChange;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.TerminateNsiRequest;
 import it.nextworks.nfvmano.libs.vs.common.query.elements.Filter;
 import it.nextworks.nfvmano.libs.vs.common.query.messages.GeneralizedQueryRequest;
+import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.nsmf.engine.messages.*;
 import it.nextworks.nfvmano.nsmf.manager.NsLcmManager;
+import it.nextworks.nfvmano.nsmf.ra.ResourceAllocationComputeService;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 
 
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatus;
+import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetInstanceRecord;
+import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -79,6 +85,9 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
     @Qualifier("engine-queue-exchange")
     TopicExchange messageExchange;
 
+    @Autowired
+    private ResourceAllocationComputeService resourceAllocationProvider;
+
     @Value("${spring.rabbitmq.queue_name_prefix:engine-in-}")
     private String queueNamePrefix;
 
@@ -87,6 +96,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
     private NsTemplateCatalogueInterface nsTemplateCatalogueInterface;
 
 
+    @Autowired
+    private NssmfDriverRegistry driverRegistry;
     //internal map of VS LCM Managers
     //each VS LCM Manager is created when a new VSI ID is created and removed when the VSI ID is removed
     private Map<UUID, NsLcmManager> nsLcmManagers = new HashMap<>();
@@ -231,32 +242,50 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
     	return nsis;
     }
 
+    @Override
+    public List<NetworkSliceSubnetInstance> queryNetworkSliceSubnetInstance(GeneralizedQueryRequest request, String tenantId)
+            throws MalformattedElementException {
+        log.debug("Processing query network slice request");
+        request.isValid();
+
+        //TODO: process tenant ID
+
+        List<NetworkSliceSubnetInstance> nsis = new ArrayList<NetworkSliceSubnetInstance>();
+        Filter filter = request.getFilter();
+        Map<String, String> fParams = filter.getParameters();
+        if (fParams.isEmpty()) {
+            log.debug("Query all the network slice subnets");
+            nsis.addAll(nsiRecordService.getAllNetworkSliceSubnetInstance());
+        } else {
+            log.error("Query filter not supported.");
+            throw new MalformattedElementException("Query filter not supported.");
+        }
+        return nsis;
+    }
+
 
 
     /**
      * This method implements the NssLcmNotificationConsumerInterface allowing the reception of
      * notifications from NSS LCM Service
      *
-     * @param nssiId ID of the Network Slice Subnet instance service this notification refers to
-     * @param changeType type of LCM change
-     * @param successful if the change has been successful
+     * @param 
      */
     @Override
-    public void notifyNssStatusChange(String nssiId, NssStatusChange changeType, boolean successful) {
-        log.debug("Processing notification about status change for NFV NS " + nssiId);
+    public void notifyNssStatusChange(NotifyNssiStatusChange nssiStatusChange) throws NotExistingEntityException, MalformattedElementException {
+        String nssiId = nssiStatusChange.getNssiId().toString();
+        log.debug("Processing notification about status change for NFV NS " + nssiStatusChange.getNssiId());
+        nssiStatusChange.isValid();
+        NetworkSliceSubnetInstanceRecord nssiRecord = nsiRecordService.getNetworkSliceSubnetInstanceRecord(nssiStatusChange.getNssiId());
         try {
-            List<NetworkSliceInstance> nsis = nsiRecordService.getNsInstanceFromNssi(nssiId);
-            if(nsis==null || nsis.isEmpty()){
-                log.error("Could not find NSIs for NSSI:"+nssiId+". Skipping message");
-                return;
-            }
-            for (  NetworkSliceInstance nsi : nsis){
-                UUID nsiId = nsi.getNetworkSliceInstanceId();
-                log.debug("NSS " + nssiId + " is associated to network slice " + nsiId+". Sending message to queue");
-                String topic = "nslifecycle.notifynss." + nsiId;
-                NotifyNssiStatusChange internalMessage = new NotifyNssiStatusChange(nssiId, changeType, successful);
+                NetworkSliceInstanceRecord nsiRecord = nsiRecordService.getNetworkSliceInstanceRecord(nssiRecord.getNsiId());
+
+                log.debug("NSS " + nssiId + " is associated to network slice " + nsiRecord.getId()+". Sending message to queue");
+                String topic = "nslifecycle.notifynss." + nsiRecord.getId();
+                EngineNotifyNssiStatusChange internalMessage = new EngineNotifyNssiStatusChange(nssiStatusChange.getNssiId(), nssiStatusChange.getNssStatusChange()
+                        , nssiStatusChange.isSuccessful());
                 sendMessageToQueue(internalMessage, topic);
-            }
+
 
 
 
@@ -287,7 +316,9 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
                 networkSliceTemplate,
                 nsiRecordService,
                 this,
-                notificationDispatcher
+                notificationDispatcher,
+                resourceAllocationProvider,
+                driverRegistry
 
 
                 );
@@ -310,6 +341,7 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
      * @param nsiManager NSMF in charge of processing the queue messages
      */
     private void createQueue(UUID nsiId, NsLcmManager nsiManager) {
+
         String queueName = this.queueNamePrefix + nsiId;
         log.debug("Creating new Queue " + queueName + " in rabbit host " + rabbitHost);
         CachingConnectionFactory cf = new CachingConnectionFactory();
@@ -341,6 +373,25 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
         return mapper;
     }
 
+
+    public void processResoureAllocationResponse(ResourceAllocationComputeResponse response){
+        log.debug("Processing Resource Allocation Response");
+        UUID nsiId = UUID.fromString(response.getNsResourceAllocation().getNsiId());
+        log.debug("Processing NSI instantiation request for NSI ID " + nsiId);
+        if (nsLcmManagers.containsKey(nsiId)) {
+
+            String topic = "nslifecycle.notifyra." + nsiId;
+            NotifyResourceAllocationResponse internalMessage = new NotifyResourceAllocationResponse(response);
+            try {
+                sendMessageToQueue(internalMessage, topic);
+            } catch (JsonProcessingException e) {
+                this.manageNsError(nsiId, "Error while translating internal NS instantiation message in Json format.");
+            }
+        } else {
+            log.warn("Unable to find Network Slice LCM Manager for NSI ID " + nsiId + ". Ignoring message.");
+
+        }
+    }
 
     
 }

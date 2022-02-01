@@ -34,18 +34,9 @@ public class NsLcmServiceTest {
     public void testCreateNsIdentifier() throws FailedOperationException,
             MethodNotImplementedException, NotExistingEntityException, MalformattedElementException, NotPermittedOperationException {
 
-        String resourceName = "OnboardNstEndToEnd.json";
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        File file = new File(classLoader.getResource(resourceName).getFile());
-        String absolutePath = file.getAbsolutePath();
-
-        System.out.println(absolutePath);
-
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            OnBoardNsTemplateRequest onBoardNsTemplateRequest = mapper.readValue(file, OnBoardNsTemplateRequest.class);
-            nsTemplateCatalogueInterface.onBoardNsTemplate(onBoardNsTemplateRequest);
+            onboardNST();
             nsLcmService.createNetworkSliceIdentifier(new CreateNsiIdRequest(
                             "5gcroco_acca_e2e",
                             "testNsName",
@@ -68,17 +59,45 @@ public class NsLcmServiceTest {
     }
 
 
+    private void onboardNST() throws it.nextworks.nfvmano.libs.ifa.common.exceptions.FailedOperationException, it.nextworks.nfvmano.libs.ifa.common.exceptions.AlreadyExistingEntityException, it.nextworks.nfvmano.libs.ifa.common.exceptions.MethodNotImplementedException, it.nextworks.nfvmano.libs.ifa.common.exceptions.MalformattedElementException, IOException {
+        String resourceName = "OnboardNstEndToEnd.json";
+
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource(resourceName).getFile());
+        String absolutePath = file.getAbsolutePath();
+
+        System.out.println(absolutePath);
+
+        ObjectMapper mapper = new ObjectMapper();
+
+            OnBoardNsTemplateRequest onBoardNsTemplateRequest = mapper.readValue(file, OnBoardNsTemplateRequest.class);
+            nsTemplateCatalogueInterface.onBoardNsTemplate(onBoardNsTemplateRequest);
+    }
+
     @Test
     public void testInstantiateNs() throws FailedOperationException,
             MethodNotImplementedException, NotExistingEntityException, MalformattedElementException, NotPermittedOperationException {
+        try {
+            onboardNST();
+            UUID nsiId = nsLcmService.createNetworkSliceIdentifier(new CreateNsiIdRequest(
+                            "nst_test_e2e",
+                            "testNsName",
+                            "testNsDescription",
+                            null),
+                    "admin");
+            nsLcmService.instantiateNetworkSlice(new InstantiateNsiRequest(nsiId), "admin");
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.FailedOperationException e) {
+            e.printStackTrace();
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.AlreadyExistingEntityException e) {
+            e.printStackTrace();
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.MethodNotImplementedException e) {
+            e.printStackTrace();
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.MalformattedElementException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        UUID nsiId = nsLcmService.createNetworkSliceIdentifier(new CreateNsiIdRequest(
-                        "testNst",
-                        "testNsName",
-                        "testNsDescription",
-                        null),
-                "admin");
-        nsLcmService.instantiateNetworkSlice(new InstantiateNsiRequest(nsiId), "admin");
 
 
     }

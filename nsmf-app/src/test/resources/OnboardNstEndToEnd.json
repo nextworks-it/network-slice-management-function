@@ -1,9 +1,154 @@
 {
   "nst": {
-    "nstId": "nst_test_e2e",
-    "nstName": "nst_test_e2e",
-    "nstVersion": "0.1",
-    "nstProvider": "NXW"
+    "nstId": "nst_e2e",
+    "nstName": "gst-for-translator-test",
+    "nstVersion": "v.0.0.1",
+    "nstProvider": "Nextworks",
+    "operationalState": false,
+    "administrativeState": null,
+    "nstServiceProfileList": [
+      {
+        "serviceProfileId": null,
+        "pLMNIdList": null,
+        "maxNumberofUEs": 15000,
+        "coverageArea": null,
+        "latency": 50,
+        "uEMobilityLevel": null,
+        "resourceSharingLevel": true,
+        "sST": "URLLC",
+        "availability": 7.68,
+        "delayTolerance": false,
+        "deterministicComm": {
+          "detCommAvailability": false,
+          "detCommPeriodicity": null
+        },
+        "dLThptPerSlice": 150000,
+        "dLThptPerUE": 50000,
+        "guaThpt": 500000.0,
+        "maxThpt": 1150000.0,
+        "uLThptPerSlice": 1000000,
+        "uLThptPerUE": 15000,
+        "maxPktSize": 3500,
+        "maxNumberofConns": 200000,
+        "kPIMonitoringList": [
+          3.0,
+          5.72,
+          4.91
+        ],
+        "userMgmtOpen": false,
+        "v2xMode": false,
+        "termDensity": 0,
+        "uESpeed": 0,
+        "activityFactor": 0.0,
+        "jitter": 0,
+        "survivalTime": null,
+        "reliability": null
+      },
+      {
+        "serviceProfileId": null,
+        "pLMNIdList": null,
+        "maxNumberofUEs": 15000,
+        "coverageArea": null,
+        "latency": 10,
+        "uEMobilityLevel": null,
+        "resourceSharingLevel": true,
+        "sST": "URLLC",
+        "availability": 7.68,
+        "delayTolerance": false,
+        "deterministicComm": {
+          "detCommAvailability": false,
+          "detCommPeriodicity": null
+        },
+        "dLThptPerSlice": 150000,
+        "dLThptPerUE": 50000,
+        "guaThpt": 500000.0,
+        "maxThpt": 1150000.0,
+        "uLThptPerSlice": 1000000,
+        "uLThptPerUE": 15000,
+        "maxPktSize": 3500,
+        "maxNumberofConns": 200000,
+        "kPIMonitoringList": [
+          3.0,
+          5.72,
+          4.91
+        ],
+        "userMgmtOpen": false,
+        "v2xMode": false,
+        "termDensity": 0,
+        "uESpeed": 0,
+        "activityFactor": 0.0,
+        "jitter": 0,
+        "survivalTime": null,
+        "reliability": null
+      },
+      {
+        "serviceProfileId": null,
+        "pLMNIdList": null,
+        "maxNumberofUEs": 15000,
+        "coverageArea": null,
+        "latency": 300,
+        "uEMobilityLevel": null,
+        "resourceSharingLevel": true,
+        "sST": "EMBB",
+        "availability": 7.68,
+        "delayTolerance": false,
+        "deterministicComm": {
+          "detCommAvailability": false,
+          "detCommPeriodicity": null
+        },
+        "dLThptPerSlice": 150000,
+        "dLThptPerUE": 50000,
+        "guaThpt": 500000.0,
+        "maxThpt": 1150000.0,
+        "uLThptPerSlice": 1000000,
+        "uLThptPerUE": 15000,
+        "maxPktSize": 3500,
+        "maxNumberofConns": 200000,
+        "kPIMonitoringList": [
+          3.0,
+          5.72,
+          4.91
+        ],
+        "userMgmtOpen": false,
+        "v2xMode": false,
+        "termDensity": 0,
+        "uESpeed": 0,
+        "activityFactor": 0.0,
+        "jitter": 0,
+        "survivalTime": null,
+        "reliability": null
+      }
+    ],
+    "nsst": {
+      "nsstId": null,
+      "operationalState": false,
+      "administrativeState": null,
+      "nsInfo": null,
+      "sliceProfileList": [
+        {
+          "sliceProfileId": null,
+          "pLMNIdList": null,
+          "eMBBPerfReq": null,
+          "uRLLCPerfReq": null,
+          "maxNumberofUEs": 15000,
+          "coverageAreaTAList": null,
+          "latency": 300,
+          "uEMobilityLevel": null,
+          "resourceSharingLevel": true
+        },
+        {
+          "sliceProfileId": null,
+          "pLMNIdList": null,
+          "eMBBPerfReq": null,
+          "uRLLCPerfReq": null,
+          "maxNumberofUEs": 15000,
+          "coverageAreaTAList": null,
+          "latency": 10,
+          "uEMobilityLevel": null,
+          "resourceSharingLevel": true
+        }
+      ]
 
+    }
   }
 }

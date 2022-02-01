@@ -1,0 +1,41 @@
+{
+
+  "nsResourceAllocation": {
+    "nsiId": "",
+    "nssResourceAllocations": [
+      {
+        "nsstId": "nsst_core",
+        "vnfPlacement": {
+          "core": "vim-id",
+          "edge": "vim-id-edge"
+        }
+      },
+      {
+        "nsstId": "nsst_transport",
+        "vLinkResources": [
+          {
+            "virtualLinkId": "transport_ter",
+            "ingressSipId": "TER_1",
+            "egressSipId": "TER_2",
+            "default": true
+          },
+          {
+            "virtualLinkId": "transport_sat",
+            "ingressSipId": "SAT_1",
+            "egressSipId": "SAT_2",
+            "defaultGw": "default"
+
+          }
+        ]
+      },
+      {
+        "nsstId": "nsst_app",
+        "vnfPlacement": {
+          "core": "vim-id",
+          "edge": "vim-id-edge"
+        }
+      }
+
+    ]
+  }
+}

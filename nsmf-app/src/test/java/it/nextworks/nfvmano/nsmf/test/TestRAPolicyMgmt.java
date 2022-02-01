@@ -1,6 +1,7 @@
 package it.nextworks.nfvmano.nsmf.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.nextworks.nfvmano.libs.vs.common.exceptions.AlreadyExistingEntityException;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.MalformattedElementException;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.policy.OnboardRAPolicyRequest;
 import it.nextworks.nfvmano.nsmf.NsmfApplication;
@@ -37,7 +38,7 @@ public class TestRAPolicyMgmt {
         try {
             OnboardRAPolicyRequest raPolicyRequest = mapper.readValue(file, OnboardRAPolicyRequest.class);
             resourceAllocationPolicyService.onboardResourceAllocationPolicy(raPolicyRequest);
-        } catch (IOException | MalformattedElementException e) {
+        } catch (IOException | MalformattedElementException | AlreadyExistingEntityException e) {
             e.printStackTrace();
         }
     }
