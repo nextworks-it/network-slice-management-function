@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.NsmfNotificationMessage;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.UpdateConfigurationRequest;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,6 +223,29 @@ public class NsmfRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
+	@RequestMapping(value = "/ns/{nsiId}/action/update", method = RequestMethod.PUT)
+	public ResponseEntity<?> updateNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
+		log.debug("Received request to configure network slice " + nsiId);
+		try {
+			String tenantId = getUserFromAuth(auth);
+			nsLcmService.updateNetworkSlice(request, tenantId);
+			return new ResponseEntity<>(HttpStatus.ACCEPTED);
+		} catch (NotExistingEntityException e) {
+			log.error("NS configuration failed due to missing elements in DB.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (MalformattedElementException e) {
+			log.error("NS configuration failed due to bad-formatted request.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (NotPermittedOperationException e) {
+			log.error("NS configuration failed due to missing permission or conflicting state.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (Exception e) {
+			log.error("NS configuration failed due to internal errors.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
 
 	
@@ -248,7 +273,7 @@ public class NsmfRestController {
 
 
 	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.PUT)
-	public ResponseEntity<?> notifyNssiStatusChange(@PathVariable String nssiId, @RequestBody NotifyNssiStatusChange request, Authentication auth) {
+	public ResponseEntity<?> notifyNssiStatusChange(@PathVariable String nssiId, @RequestBody NsmfNotificationMessage request, Authentication auth) {
 
 		log.debug("Received request to instantiate network slice " + nssiId);
 		try {

@@ -4,31 +4,30 @@
     "nsiId": "",
     "nssResourceAllocations": [
       {
+        "allocationType": "COMPUTE",
         "nsstId": "nsst_core",
         "vnfPlacement": {
-          "core": "vim-id",
-          "edge": "vim-id-edge"
+          "UPF-A": "vim-id",
+          "UPF-I": "vim-id-edge"
         }
       },
       {
+        "allocationType": "TRANSPORT",
         "nsstId": "nsst_transport",
-        "vLinkResources": [
+        "transportAllocations": [
           {
-            "virtualLinkId": "transport_ter",
-            "ingressSipId": "TER_1",
-            "egressSipId": "TER_2",
+            "transportFlowType": "TERRESTRIAL",
             "default": true
           },
           {
-            "virtualLinkId": "transport_sat",
-            "ingressSipId": "SAT_1",
-            "egressSipId": "SAT_2",
+            "transportFlowType": "SATELLITE",
             "defaultGw": "default"
 
           }
         ]
       },
       {
+        "allocationType": "COMPUTE",
         "nsstId": "nsst_app",
         "vnfPlacement": {
           "core": "vim-id",

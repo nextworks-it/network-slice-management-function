@@ -4,15 +4,14 @@ import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.specialized.transport.SdnConfigPayload;
-import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
-import it.nextworks.nfvmano.libs.vs.common.ra.elements.VirtualLinkResourceAllocation;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.*;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetInstanceRecord;
-import it.nextworks.nfvmano.nsmf.record.repos.NetworkSliceInstanceRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfRestClient;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalInstantiateNssiRequest;
+import it.nextworks.nfvmano.nsmf.sbi.messages.InternalModifyNssiRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,21 +45,51 @@ public class TransportNssmfRestClient extends NssmfRestClient {
                     .filter(nssA-> nssA.getNsstId().equals(internalRequest.getNsst().getNsstId()))
                     .findFirst();
             if(allocation.isPresent()){
+                if(allocation.get().getAllocationType().equals(NssResourceAllocationType.TRANSPORT)){
+                    TransportNssResourceAllocation tAllocation = (TransportNssResourceAllocation) allocation.get();
+                    List<Map<String, String>> transportSpecifications = new ArrayList<>();
+                    for(TransportFlowAllocation tsAllocation: tAllocation.getTransportAllocations()){
+                        Map<String, String> curTAlloc = new HashMap<>();
+                        String transportLink = null;
+                        if(tsAllocation.getTransportFlowType().equals(TransportFlowType.TERRESTRIAL)){
+                            transportLink= "transport_ter";
 
-                List<Map<String, String>> transportSpecifications = new ArrayList<>();
-                for(VirtualLinkResourceAllocation vlAllocation: allocation.get().getvLinkResources()){
-                    Map<String, String> curTAlloc = new HashMap<>();
-                    curTAlloc.put("transport-id", vlAllocation.getVirtualLinkId());
-                    if(vlAllocation.isDefault())
-                        sdnConfigPayload.setTargetTransportId(vlAllocation.getVirtualLinkId());
-                    if(vlAllocation.getDefaultGw()!=null)
-                        curTAlloc.put("gateway-id", vlAllocation.getDefaultGw());
-                    transportSpecifications.add(curTAlloc);
-                }
+                        }else if(tsAllocation.getTransportFlowType().equals(TransportFlowType.SATELLITE)){
+                            transportLink= "transport_sat";
+                            curTAlloc.put("transport-id", "transport_ter");
+                        }
+                        curTAlloc.put("transport-id", transportLink);
+                        if(tsAllocation.isDefault())
+                            sdnConfigPayload.setTargetTransportId(transportLink);
+                        if(tsAllocation.getDefaultGw()!=null)
+                            curTAlloc.put("gateway-id", tsAllocation.getDefaultGw());
+                        transportSpecifications.add(curTAlloc);
+                    }
 
-                sdnConfigPayload.setTransportSpecifications(transportSpecifications);
-                super.instantiateNetworkSubSlice(sdnConfigPayload);
+                    sdnConfigPayload.setTransportSpecifications(transportSpecifications);
+                    super.instantiateNetworkSubSlice(sdnConfigPayload);
+                }else throw new FailedOperationException("NSS Resource Allocation type not supported");
+
             }else throw new FailedOperationException("Could not find allocation for NSST:"+internalRequest.getNsst().getNsstId());
+
+        }else throw  new MethodNotImplementedException("Instantiate network sub slice method not implemented for generic message");
+
+    }
+
+
+    @Override
+    public void modifyNetworkSlice(NssmfBaseProvisioningMessage request) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        if(request instanceof InternalModifyNssiRequest){
+            InternalModifyNssiRequest internalRequest = (InternalModifyNssiRequest)request;
+
+            SdnConfigPayload sdnConfigPayload = new SdnConfigPayload();
+            sdnConfigPayload.setNssiId(request.getNssiId());
+            NetworkSliceInstanceRecord nsiRecord = nsiRecordService.getNetworkSliceInstanceRecord(internalRequest.getParentNsiId());
+            List<Map<String, String>> transportSpecifications = new ArrayList<>();
+
+            sdnConfigPayload.setTransportSpecifications(transportSpecifications);
+            super.modifyNetworkSlice(sdnConfigPayload);
+
 
         }else throw  new MethodNotImplementedException("Instantiate network sub slice method not implemented for generic message");
 

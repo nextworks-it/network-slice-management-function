@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 	@Type(value = TerminateNsiRequestMessage.class, 	name = "TERMINATE_NSI_REQUEST"),
 	@Type(value = EngineNotifyNssiStatusChange.class, 	name = "NOTIFY_NSSI_STATUS_CHANGE"),
 		@Type(value = NotifyResourceAllocationResponse.class, 	name = "NOTIFY_RESOURCE_ALLOCATION_RESPONSE"),
+		@Type(value = EngineUpdateNsiRequest.class, 	name = "UPDATE_NSI_REQUEST"),
 })
 public abstract class NsmfEngineMessage {
 

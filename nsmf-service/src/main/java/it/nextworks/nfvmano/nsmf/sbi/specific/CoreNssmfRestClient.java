@@ -4,6 +4,7 @@ import it.nextworks.nfvmano.libs.ifa.templates.nst.EMBBPerfReq;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.specialized.core.UpfProvisioningPayload;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.ComputeNssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfRestClient;
@@ -47,7 +48,7 @@ public class CoreNssmfRestClient extends NssmfRestClient {
                     .findFirst();
             if(allocation.isPresent()){
 
-                payload.setUserPlaneFunctions(allocation.get().getVnfPlacement());
+                payload.setUserPlaneFunctions(((ComputeNssResourceAllocation)allocation.get()).getVnfPlacement());
                 super.instantiateNetworkSubSlice(payload);
             }else throw new FailedOperationException("Could not find allocation for NSST:"+internalRequest.getNsst().getNsstId());
 

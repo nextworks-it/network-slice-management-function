@@ -31,6 +31,8 @@ public class NetworkSliceInstanceRecord {
 
     private String errorMsg;
 
+    private String name;
+
 
     public NetworkSliceInstanceRecord() {
     }
@@ -39,7 +41,8 @@ public class NetworkSliceInstanceRecord {
                                       String nstId,
                                       String vsInstanceId,
                                       NetworkSliceInstanceRecordStatus status,
-                                      String tenantId) {
+                                      String tenantId,
+                                      String name) {
         if(networkSliceSubnetInstances!=null){
             this.networkSliceSubnetInstances = networkSliceSubnetInstances;
         }
@@ -48,6 +51,7 @@ public class NetworkSliceInstanceRecord {
         this.vsInstanceId = vsInstanceId;
         this.status=status;
         this.tenantId= tenantId;
+        this.name=name;
     }
 
     public List<NetworkSliceSubnetInstanceRecord> getNetworkSliceSubnetInstanceIds() {
@@ -77,7 +81,7 @@ public class NetworkSliceInstanceRecord {
     public NetworkSliceInstance getNetworkSliceInstance(){
         return new NetworkSliceInstance(this.id, this.getNetworkSliceSubnetInstanceIds().stream()
                 .map(e -> e.getNssiIdentifier())
-                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString(),nstId  );
+                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString(),nstId, name  );
     }
 
 

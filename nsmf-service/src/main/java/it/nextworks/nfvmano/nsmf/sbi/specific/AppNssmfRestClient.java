@@ -3,6 +3,7 @@ package it.nextworks.nfvmano.nsmf.sbi.specific;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.specialized.vnfapps.VnfProvisioningPayload;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.ComputeNssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfRestClient;
@@ -28,7 +29,7 @@ public class AppNssmfRestClient extends NssmfRestClient {
                 VnfProvisioningPayload payload  = new VnfProvisioningPayload();
                 payload.setNssiId(request.getNssiId());
                 payload.setE2eSliceId(internalRequest.getParentNsiId().toString());
-                payload.setVnfApps(allocation.get().getVnfPlacement());
+                payload.setVnfApps(((ComputeNssResourceAllocation)allocation.get()).getVnfPlacement());
                 payload.setNsdId(internalRequest.getNsst().getNsdInfo().getNsdId());
                 super.instantiateNetworkSubSlice(payload);
             }else throw new FailedOperationException("Could not find allocation for NSST:"+internalRequest.getNsst().getNsstId());

@@ -92,44 +92,75 @@ public class NssmfRestClient implements NssmfLcmProvisioningInterface, NssmfLcmC
     public void instantiateNetworkSubSlice(NssmfBaseProvisioningMessage request) throws MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException, AlreadyExistingEntityException, NotExistingEntityException {
 
 
-            log.debug("Received request to instantiate a network subslice identifier "+request.getNssiId());
-            ObjectMapper mapper = new ObjectMapper();
+        log.debug("Received request to instantiate a network subslice identifier "+request.getNssiId());
+        ObjectMapper mapper = new ObjectMapper();
         try {
             log.debug(mapper.writeValueAsString(request));
         } catch (JsonProcessingException e) {
             log.warn("error deserializing request:",e);
         }
         HttpHeaders header = new HttpHeaders();
-            header.add("Content-Type", "application/json");
+        header.add("Content-Type", "application/json");
 
-            HttpEntity<?> postEntity = new HttpEntity<>(request, header);
+        HttpEntity<?> postEntity = new HttpEntity<>(request, header);
 
-            String url = baseUrl + "/nss/"+request.getNssiId()+"/action/instantiate";
-            try {
-                ResponseEntity<UUID> httpResponse =
-                        restTemplate.exchange(url, HttpMethod.PUT, postEntity, UUID.class);
+        String url = baseUrl + "/nss/"+request.getNssiId()+"/action/instantiate";
+        try {
+            ResponseEntity<UUID> httpResponse =
+                    restTemplate.exchange(url, HttpMethod.PUT, postEntity, UUID.class);
 
-                log.debug("Response code: " + httpResponse.getStatusCode().toString());
-                HttpStatus code = httpResponse.getStatusCode();
+            log.debug("Response code: " + httpResponse.getStatusCode().toString());
+            HttpStatus code = httpResponse.getStatusCode();
 
-                if (code.equals(HttpStatus.ACCEPTED)) {
-                    log.debug("Triggered network slice subnet instantiation");
+            if (code.equals(HttpStatus.ACCEPTED)) {
+                log.debug("Triggered network slice subnet instantiation");
 
 
 
-                } else {
-                    throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
-                }
-
-            }catch (Exception e){
-                log.error("Generic error during NssmfRestClient interaction with NSSMF",e);
+            } else {
                 throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
             }
+
+        }catch (Exception e){
+            log.error("Generic error during NssmfRestClient interaction with NSSMF",e);
+            throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
+        }
 
     }
 
     @Override
     public void modifyNetworkSlice(NssmfBaseProvisioningMessage request) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        log.debug("Received request to modify a network subslice"+request.getNssiId());
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            log.debug(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException e) {
+            log.warn("error deserializing request:",e);
+        }
+        HttpHeaders header = new HttpHeaders();
+        header.add("Content-Type", "application/json");
+
+        HttpEntity<?> postEntity = new HttpEntity<>(request, header);
+
+        String url = baseUrl + "/nss/"+request.getNssiId()+"/action/modify";
+        try {
+            ResponseEntity<UUID> httpResponse =
+                    restTemplate.exchange(url, HttpMethod.PUT, postEntity, UUID.class);
+
+            log.debug("Response code: " + httpResponse.getStatusCode().toString());
+            HttpStatus code = httpResponse.getStatusCode();
+
+            if (code.equals(HttpStatus.ACCEPTED)) {
+                log.debug("Triggered network slice subnet modification");
+
+            } else {
+                throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
+            }
+
+        }catch (Exception e){
+            log.error("Generic error during NssmfRestClient interaction with NSSMF",e);
+            throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
+        }
 
     }
 

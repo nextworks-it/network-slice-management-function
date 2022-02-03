@@ -28,13 +28,14 @@ import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceInstance;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssStatusChange;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssiNotifType;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NssiLcmNotificationConsumerInterface;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.NsmfNotificationMessage;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.UpdateConfigurationRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.CreateNsiIdRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.InstantiateNsiRequest;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.NotifyNssiStatusChange;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.TerminateNsiRequest;
 import it.nextworks.nfvmano.libs.vs.common.query.elements.Filter;
 import it.nextworks.nfvmano.libs.vs.common.query.messages.GeneralizedQueryRequest;
@@ -139,7 +140,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
             UUID networkSliceId = nsiRecordService.createNetworkSliceInstanceEntry (
                     nstId,
                     request.getVsInstanceId(),
-                    tenantId
+                    tenantId,
+                    request.getName()
             );
             initNewNsLcmManager(networkSliceId, nsTemplate);
             return networkSliceId;
@@ -263,6 +265,41 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
         return nsis;
     }
 
+    @Override
+    public void updateNetworkSlice(UpdateConfigurationRequest request, String tenantId) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        log.debug("Processing network slice configuration request");
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            log.debug(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException e) {
+            log.warn("Could not deserialize request");
+        }
+
+        request.isValid();
+        UUID nsiId = request.getNsiId();
+        if (nsLcmManagers.containsKey(nsiId)) {
+            NetworkSliceInstanceRecord record = nsiRecordService.getNetworkSliceInstanceRecord(nsiId);
+            if (record.getStatus() != NetworkSliceInstanceRecordStatus.INSTANTIATED) {
+                log.error("Network slice " + nsiId + " not in INSTANTIATED  state. Cannot UPDATE it. Skipping message.");
+                throw new NotPermittedOperationException("Network slice " + nsiId + " not in INSTANTIATED state. Current status:"+record.getStatus());
+            }
+            String topic = "nslifecycle.updatens." + nsiId;
+            EngineUpdateNsiRequest internalMessage = new EngineUpdateNsiRequest(request.getNstId(),
+                    request.getNssiId(),
+                    request, request.getSliceSubnetType());
+            try {
+                sendMessageToQueue(internalMessage, topic);
+            } catch (JsonProcessingException e) {
+                this.manageNsError(nsiId, "Error while translating internal NS instantiation message in Json format.");
+            }
+        } else {
+            log.error("Unable to find Network Slice LCM Manager for NSI ID " + nsiId + ". Unable to instantiate the NSI.");
+            throw new NotExistingEntityException("Unable to find NS LCM Manager for NSI ID " + nsiId + ". Unable to instantiate the NSI.");
+        }
+
+
+
+    }
 
 
     /**
@@ -272,7 +309,7 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
      * @param 
      */
     @Override
-    public void notifyNssStatusChange(NotifyNssiStatusChange nssiStatusChange) throws NotExistingEntityException, MalformattedElementException {
+    public void notifyNssStatusChange(NsmfNotificationMessage nssiStatusChange) throws NotExistingEntityException, MalformattedElementException {
         String nssiId = nssiStatusChange.getNssiId().toString();
         log.debug("Processing notification about status change for NFV NS " + nssiStatusChange.getNssiId());
         nssiStatusChange.isValid();
@@ -282,8 +319,10 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
 
                 log.debug("NSS " + nssiId + " is associated to network slice " + nsiRecord.getId()+". Sending message to queue");
                 String topic = "nslifecycle.notifynss." + nsiRecord.getId();
-                EngineNotifyNssiStatusChange internalMessage = new EngineNotifyNssiStatusChange(nssiStatusChange.getNssiId(), nssiStatusChange.getNssStatusChange()
-                        , nssiStatusChange.isSuccessful());
+                EngineNotifyNssiStatusChange internalMessage = new EngineNotifyNssiStatusChange(nssiStatusChange.getNssiId(),
+                        nssiStatusChange.getNssiNotifType(),
+                        !nssiStatusChange.getNssiNotifType().equals(NssiNotifType.ERROR),
+                        nssiStatusChange.getNssiStatus());
                 sendMessageToQueue(internalMessage, topic);
 
 

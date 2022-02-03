@@ -8,6 +8,8 @@ import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.interfaces.NssmfLcmProvisioningInterface;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.NsResourceAllocation;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.interfaces.ResourceAllocationProvider;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
@@ -17,13 +19,12 @@ import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatus;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetRecordStatus;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
-import it.nextworks.nfvmano.nsmf.sbi.generic.GenericInstantiateNssiRequest;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalInstantiateNssiRequest;
+import it.nextworks.nfvmano.nsmf.sbi.messages.InternalModifyNssiRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,10 @@ public class NsLcmManager {
     private NssmfDriverRegistry driverRegistry;
     private ResourceAllocationComputeResponse resourceAllocationComputeResponse;
     private ArrayList<NSST> nsstToInstantiate = new ArrayList<>();
+
+    private Map<UUID, NssmfLcmProvisioningInterface> nssiDrivers = new HashMap<>();
+    private Map<UUID, NSST> nssiNsst = new HashMap<>();
+
     public NsLcmManager(UUID networkSliceInstanceId, NST nst, NsiRecordService nsiRecordService,
                         NsmfLcmProvisioningInterface nsmfLcmProvisioningInterface,
                         NsiLcmNotificationConsumerInterface nsiLcmNotificationConsumerInterface,
@@ -81,6 +86,8 @@ public class NsLcmManager {
                 processNotifyNssiStatusChange((EngineNotifyNssiStatusChange)em);
             }else if(type== NsmfEngineMessageType.TERMINATE_NSI_REQUEST){
                 processTerminateNsiRequest((InstantiateNsiRequestMessage)em);
+            }else if(type== NsmfEngineMessageType.UPDATE_NSI_REQUEST){
+                processUpdateNsiRequest((EngineUpdateNsiRequest)em);
             }
         } catch (IOException e) {
            logMessageError(e);
@@ -125,7 +132,16 @@ public class NsLcmManager {
                     try {
                         UUID nssiId = driver.createNetworkSubSliceIdentifier();
                         log.debug("created NSSI ID:"+nssiId);
-                        nsiRecordService.createNetworkSliceSubnetInstanceEntry(targetNsst.getNsstId(), nssiId, this.networkSliceInstanceId, targetNsst.getType());
+                        nssiDrivers.put(nssiId, driver);
+                        nssiNsst.put(nssiId, targetNsst);
+                        Optional<NssResourceAllocation> allocation = resourceAllocationComputeResponse.getNsResourceAllocation().getNssResourceAllocations().stream()
+                                .filter(nssA-> nssA.getNsstId().equals(targetNsst.getNsstId()))
+                                .findFirst();
+                        nsiRecordService.createNetworkSliceSubnetInstanceEntry(targetNsst.getNsstId(),
+                                nssiId, this.networkSliceInstanceId,
+                                targetNsst.getType(),
+                                allocation.get()
+                                );
                         log.debug("created NSSI RECORD:"+nssiId+" nsstId:"+targetNsst.getNsstId()+" type:"+targetNsst.getType());
                         driver.instantiateNetworkSubSlice(new InternalInstantiateNssiRequest(nssiId,
                                 this.networkSliceInstanceId,
@@ -265,6 +281,59 @@ public class NsLcmManager {
 
     }
 
+    private void processUpdateNsiRequest(EngineUpdateNsiRequest em)  {
+        log.debug("Received request to update NSI");
+        try {
+            NetworkSliceInstanceRecord record = nsiRecordService.getNetworkSliceInstanceRecord(this.networkSliceInstanceId);
+            if(!record.getStatus().equals(NetworkSliceInstanceRecordStatus.INSTANTIATED)){
+                log.warn("Received update NSI request in wrong status:"+record.getStatus()+" . IGNORING");
+            }
+            List<UUID> targetNssiIds = new ArrayList<>();
+            if(em.getNssiId()!=null){
+                targetNssiIds.add(em.getNssiId());
+            }else if(em.getNstId()!=null){
+                targetNssiIds= record.getNetworkSliceSubnetInstanceIds().stream()
+                        .filter(nssi -> nssi.getNsstId().equals(em.getNstId()))
+                        .map(nssi-> nssi.getNssiIdentifier())
+                        .collect(Collectors.toList());
+            }else if(em.getSliceSubnetType()!=null){
+
+                targetNssiIds= record.getNetworkSliceSubnetInstanceIds().stream()
+                        .filter(nssi -> nssi.getSliceSubnetType().equals(SliceSubnetType.valueOf(em.getSliceSubnetType().toString())))
+                        .map(nssi-> nssi.getNssiIdentifier())
+                        .collect(Collectors.toList());
+            }
+            if(targetNssiIds.isEmpty())
+                log.warn("No NSSIs found to be configured. SKIPPING");
+            //TODO update status
+            for(UUID nssiId: targetNssiIds){
+                NSST targetNsst = nssiNsst.get(nssiId);
+
+
+                InternalModifyNssiRequest internalModifyNssiRequest = new InternalModifyNssiRequest(nssiId,
+                        this.networkSliceInstanceId,
+                        nssiNsst.get(nssiId),
+
+                        em.getUpdateConfigurationRequest(),
+                        this.nst
+
+                 );
+                nssiDrivers.get(nssiId).modifyNetworkSlice(internalModifyNssiRequest);
+            }
+
+        } catch (NotExistingEntityException e) {
+            failInstance(e.getMessage());
+        } catch (FailedOperationException e) {
+            failInstance(e.getMessage());
+        } catch (MethodNotImplementedException e) {
+            failInstance(e.getMessage());
+        } catch (MalformattedElementException e) {
+            failInstance(e.getMessage());
+        } catch (NotPermittedOperationException e) {
+            failInstance(e.getMessage());
+        }
+    }
+
     private void failInstance(String message){
         try {
             log.error("Error during LCM operation:"+ message);
@@ -279,6 +348,9 @@ public class NsLcmManager {
         log.error("Error message:", e);
 
     }
+
+
+
 
 
     private NssmfLcmProvisioningInterface getNssmfLcmDriver(ResourceAllocationComputeResponse response, NSST targetNsst){

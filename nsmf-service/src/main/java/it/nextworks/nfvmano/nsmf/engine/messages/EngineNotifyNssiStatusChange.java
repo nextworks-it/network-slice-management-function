@@ -17,6 +17,8 @@ package it.nextworks.nfvmano.nsmf.engine.messages;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssStatusChange;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssiNotifType;
+import it.nextworks.nfvmano.libs.vs.common.nssmf.elements.NssiStatus;
 
 import java.util.UUID;
 
@@ -26,25 +28,29 @@ public class EngineNotifyNssiStatusChange extends NsmfEngineMessage {
 	@JsonProperty("nssiId")
 	private UUID nssiId;
 	
-	@JsonProperty("statusChange")
-	private NssStatusChange statusChange;
+	@JsonProperty("nssiNotifType")
+	private NssiNotifType nssiNotifType;
 
 	@JsonProperty("successful")
 	private boolean isSuccessful;
-	
+
+	@JsonProperty("nssiStatus")
+	private NssiStatus nssiStatus;
 	/**
 	 * @param nssiId
-	 * @param statusChange
+	 * @param nssiNotifType
 	 * @param successful
 	 */
 	@JsonCreator
 	public EngineNotifyNssiStatusChange(@JsonProperty("nssiId") UUID nssiId,
-										@JsonProperty("statusChange") NssStatusChange statusChange,
-										@JsonProperty("successful") boolean successful) {
+										@JsonProperty("statusChange") NssiNotifType nssiNotifType,
+										@JsonProperty("successful") boolean successful,
+										@JsonProperty("nssiStatus") NssiStatus nssiStatus) {
 		this.type = NsmfEngineMessageType.NOTIFY_NSSI_STATUS_CHANGE;
 		this.nssiId = nssiId;
-		this.statusChange = statusChange;
+		this.nssiNotifType = nssiNotifType;
 		this.isSuccessful = successful;
+		this.nssiStatus=nssiStatus;
 	}
 
 
@@ -55,8 +61,8 @@ public class EngineNotifyNssiStatusChange extends NsmfEngineMessage {
 	/**
 	 * @return the statusChange
 	 */
-	public NssStatusChange getStatusChange() {
-		return statusChange;
+	public NssiNotifType getNssiNotifType() {
+		return nssiNotifType;
 	}
 
 	/**
@@ -65,7 +71,8 @@ public class EngineNotifyNssiStatusChange extends NsmfEngineMessage {
 	public boolean isSuccessful() {
 		return isSuccessful;
 	}
-	
-	
-	
+
+	public NssiStatus getNssiStatus() {
+		return nssiStatus;
+	}
 }
