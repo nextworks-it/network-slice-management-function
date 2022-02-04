@@ -113,7 +113,7 @@ public class NsiRecordService {
 
         } else if(resourceAllocation.getAllocationType().equals(NssResourceAllocationType.TRANSPORT)){
             for(TransportFlowAllocation ta: ((TransportNssResourceAllocation) resourceAllocation).getTransportAllocations()){
-                tsRecords.add(new TransportFlowAllocationRecord(ta.getTransportFlowType(), ta.getDefaultGw(), ta.isDefault()));
+                tsRecords.add(new TransportFlowAllocationRecord(ta.getTransportFlowType(), ta.getDefaultGw(), ta.isActive()));
             }
 
         }

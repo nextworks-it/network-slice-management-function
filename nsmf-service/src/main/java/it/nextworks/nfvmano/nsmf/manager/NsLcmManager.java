@@ -7,17 +7,19 @@ import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.ConfigurationRequestStatus;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.interfaces.NssmfLcmProvisioningInterface;
-import it.nextworks.nfvmano.libs.vs.common.ra.elements.NsResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.interfaces.ResourceAllocationProvider;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.nsmf.engine.messages.*;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
+import it.nextworks.nfvmano.nsmf.record.elements.ConfigurationRequestRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatus;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetRecordStatus;
+import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalInstantiateNssiRequest;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalModifyNssiRequest;
@@ -37,6 +39,7 @@ public class NsLcmManager {
     private NST nst;
 
     private NsiRecordService nsiRecordService;
+    private ConfigurationRequestRepo configurationRequestRepo;
     private NsmfLcmProvisioningInterface nsmfLcmProvisioningInterface;
 
     private NsiLcmNotificationConsumerInterface nsiLcmNotificationConsumerInterface;
@@ -47,12 +50,14 @@ public class NsLcmManager {
 
     private Map<UUID, NssmfLcmProvisioningInterface> nssiDrivers = new HashMap<>();
     private Map<UUID, NSST> nssiNsst = new HashMap<>();
+    private UUID lastConfigurationRequestId;
 
     public NsLcmManager(UUID networkSliceInstanceId, NST nst, NsiRecordService nsiRecordService,
                         NsmfLcmProvisioningInterface nsmfLcmProvisioningInterface,
                         NsiLcmNotificationConsumerInterface nsiLcmNotificationConsumerInterface,
                         ResourceAllocationProvider resourceAllocationProvider,
-                        NssmfDriverRegistry driverRegistry) {
+                        NssmfDriverRegistry driverRegistry,
+                        ConfigurationRequestRepo configurationRequestRepo) {
         this.networkSliceInstanceId = networkSliceInstanceId;
         this.nst = nst;
         this.nsiRecordService = nsiRecordService;
@@ -60,6 +65,7 @@ public class NsLcmManager {
         this.nsiLcmNotificationConsumerInterface= nsiLcmNotificationConsumerInterface;
         this.resourceAllocationProvider=resourceAllocationProvider;
         this.driverRegistry= driverRegistry;
+        this.configurationRequestRepo=configurationRequestRepo;
     }
 
 
@@ -238,20 +244,32 @@ public class NsLcmManager {
         log.debug("Processing NSSI Status Change notification for NSSI:"+em.getNssiId());
         try {
             NetworkSliceInstanceRecord record = nsiRecordService.getNetworkSliceInstanceRecord(this.networkSliceInstanceId);
-            if(record.getStatus()==NetworkSliceInstanceRecordStatus.INSTANTIATING_CORE_SUBNET
-             || record.getStatus()==NetworkSliceInstanceRecordStatus.INSTANTIATING_TRANSPORT_SUBNET
-            || record.getStatus()==NetworkSliceInstanceRecordStatus.INSTANTIATING_RAN_SUBNET
-                    || record.getStatus()==NetworkSliceInstanceRecordStatus.INSTANTIATING_APP_SUBNET){
-                if(em.isSuccessful()){
+            if (record.getStatus() == NetworkSliceInstanceRecordStatus.INSTANTIATING_CORE_SUBNET
+                    || record.getStatus() == NetworkSliceInstanceRecordStatus.INSTANTIATING_TRANSPORT_SUBNET
+                    || record.getStatus() == NetworkSliceInstanceRecordStatus.INSTANTIATING_RAN_SUBNET
+                    || record.getStatus() == NetworkSliceInstanceRecordStatus.INSTANTIATING_APP_SUBNET) {
+                if (em.isSuccessful()) {
                     //TODO: validate incoming notification
                     log.debug("NSSI sucessfully instantiated");
-                    log.debug("Removing NSST from pending instantiation list:"+nsstToInstantiate.get(0).getNsstId());
+                    log.debug("Removing NSST from pending instantiation list:" + nsstToInstantiate.get(0).getNsstId());
                     nsstToInstantiate.remove(0);
                     nsiRecordService.updateNetworkSliceSubnetStatus(em.getNssiId(), NetworkSliceSubnetRecordStatus.INSTANTIATED);
                     internalInstantiateFsmUpdate();
-                }else{
-                    failInstance("Failed NSSI status change:"+em.getNssiId());
+                } else {
+                    failInstance("Failed NSSI status change:" + em.getNssiId());
                 }
+            } else if (record.getStatus()==NetworkSliceInstanceRecordStatus.CONFIGURING){
+                //TODO: Fix this, shortcut because the NSSMF do not support other types of notifications
+                log.debug("Received NSSMF configuration notification");
+                UUID configActionId = lastConfigurationRequestId;
+                Optional<ConfigurationRequestRecord> configurationRequestRecord = configurationRequestRepo.findById(configActionId);
+                if(configurationRequestRecord.isPresent()){
+                    ConfigurationRequestRecord ncrRecord = configurationRequestRecord.get();
+                    ncrRecord.setStatus(ConfigurationRequestStatus.SUCCESS);
+                    nsiRecordService.updateNsInstanceStatus(this.networkSliceInstanceId, NetworkSliceInstanceRecordStatus.INSTANTIATED,"");
+                    configurationRequestRepo.saveAndFlush(ncrRecord);
+                    log.debug("Updating configuration request action and NSI status");
+                }else log.warn("Could not found configuration request with specified id:"+configActionId+". IGNORING");
             }else log.warn("Received NOTIFY NSSI STATUS Change in wrong status: "+record.getStatus()+". IGNORING");
 
         } catch (NotExistingEntityException e) {
@@ -306,6 +324,12 @@ public class NsLcmManager {
             if(targetNssiIds.isEmpty())
                 log.warn("No NSSIs found to be configured. SKIPPING");
             //TODO update status
+            this.lastConfigurationRequestId = em.getConfigurationRequestId();
+            log.debug("Updating NSI status to CONFIGURING");
+            nsiRecordService.updateNsInstanceStatus(this.networkSliceInstanceId, NetworkSliceInstanceRecordStatus.CONFIGURING, "");
+            ConfigurationRequestRecord crrRecord = configurationRequestRepo.findById(lastConfigurationRequestId).get();
+            crrRecord.setNetworkSliceSubnetInstanceId(targetNssiIds);
+            configurationRequestRepo.saveAndFlush(crrRecord);
             for(UUID nssiId: targetNssiIds){
                 NSST targetNsst = nssiNsst.get(nssiId);
 
@@ -315,7 +339,8 @@ public class NsLcmManager {
                         nssiNsst.get(nssiId),
 
                         em.getUpdateConfigurationRequest(),
-                        this.nst
+                        this.nst,
+                        lastConfigurationRequestId
 
                  );
                 nssiDrivers.get(nssiId).modifyNetworkSlice(internalModifyNssiRequest);

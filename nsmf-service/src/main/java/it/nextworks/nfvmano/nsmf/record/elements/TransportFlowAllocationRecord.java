@@ -12,7 +12,7 @@ public class TransportFlowAllocationRecord {
 
     private String defaultGw;
 
-    private boolean isDefault;
+    private boolean active;
 
     public TransportFlowAllocationRecord() {
     }
@@ -20,15 +20,15 @@ public class TransportFlowAllocationRecord {
     public TransportFlowAllocationRecord(TransportFlowType transportFlowType, String defaultGw, boolean isDefault) {
         this.transportFlowType = transportFlowType;
         this.defaultGw = defaultGw;
-        this.isDefault= isDefault;
+        this.active = isDefault;
     }
 
     public TransportFlowType getTransportFlowType() {
         return transportFlowType;
     }
 
-    public boolean isDefault() {
-        return isDefault;
+    public boolean isActive() {
+        return active;
     }
 
     public String getDefaultGw() {
@@ -36,6 +36,6 @@ public class TransportFlowAllocationRecord {
     }
 
     public TransportFlowAllocation getTransportSegmentAllocation(){
-        return new TransportFlowAllocation(transportFlowType, defaultGw, isDefault);
+        return new TransportFlowAllocation(transportFlowType, defaultGw, active);
     }
 }

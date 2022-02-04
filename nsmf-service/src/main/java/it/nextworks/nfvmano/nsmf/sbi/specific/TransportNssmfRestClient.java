@@ -2,6 +2,9 @@ package it.nextworks.nfvmano.nsmf.sbi.specific;
 
 import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.ConfigurationActionType;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.SatelliteNetworkConfiguration;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.SliceTransferConfig;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.specialized.transport.SdnConfigPayload;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.*;
@@ -59,7 +62,7 @@ public class TransportNssmfRestClient extends NssmfRestClient {
                             curTAlloc.put("transport-id", "transport_ter");
                         }
                         curTAlloc.put("transport-id", transportLink);
-                        if(tsAllocation.isDefault())
+                        if(tsAllocation.isActive())
                             sdnConfigPayload.setTargetTransportId(transportLink);
                         if(tsAllocation.getDefaultGw()!=null)
                             curTAlloc.put("gateway-id", tsAllocation.getDefaultGw());
@@ -85,9 +88,19 @@ public class TransportNssmfRestClient extends NssmfRestClient {
             SdnConfigPayload sdnConfigPayload = new SdnConfigPayload();
             sdnConfigPayload.setNssiId(request.getNssiId());
             NetworkSliceInstanceRecord nsiRecord = nsiRecordService.getNetworkSliceInstanceRecord(internalRequest.getParentNsiId());
-            List<Map<String, String>> transportSpecifications = new ArrayList<>();
+            sdnConfigPayload.setOperationId(internalRequest.getOperationId());
+            sdnConfigPayload.setConfigurationActionType(internalRequest.getUpdateConfigurationRequest().getActionType());
+            if(internalRequest.getUpdateConfigurationRequest().getActionType()== ConfigurationActionType.SATELLITE_NETWORK_CONFIGURATION){
+                SatelliteNetworkConfiguration reconf = (SatelliteNetworkConfiguration) internalRequest.getUpdateConfigurationRequest();
+                sdnConfigPayload.setTransportConfig(reconf.getTransportConfig());
+            }else if (internalRequest.getUpdateConfigurationRequest().getActionType()== ConfigurationActionType.SLICE_TRANSFER){
+                Map<String, String> flowTransfers = new HashMap<>();
+                SliceTransferConfig reconf = (SliceTransferConfig) internalRequest.getUpdateConfigurationRequest();
+                flowTransfers.put(reconf.getOrigin(), reconf.getTarget());
+                sdnConfigPayload.setSliceFlowTransfers(flowTransfers);
 
-            sdnConfigPayload.setTransportSpecifications(transportSpecifications);
+            }
+
             super.modifyNetworkSlice(sdnConfigPayload);
 
 

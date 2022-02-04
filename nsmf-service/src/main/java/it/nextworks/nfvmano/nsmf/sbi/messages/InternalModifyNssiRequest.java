@@ -15,14 +15,16 @@ public class InternalModifyNssiRequest extends GenericInstantiateNssiRequest {
     private NST parentNst;
     private NSST nsst;
     private UpdateConfigurationRequest updateConfigurationRequest;
+    private UUID operationId;
 
 
-    public InternalModifyNssiRequest(UUID nssiId, UUID parentNsiId, NSST nsst, UpdateConfigurationRequest updateConfigurationRequest, NST parentNST){
+    public InternalModifyNssiRequest(UUID nssiId, UUID parentNsiId, NSST nsst, UpdateConfigurationRequest updateConfigurationRequest, NST parentNST, UUID operationId){
         super(nssiId);
         this.nsst=nsst;
         this.updateConfigurationRequest = updateConfigurationRequest;
         this.parentNst=parentNST;
         this.parentNsiId=parentNsiId;
+        this.operationId=operationId;
     }
 
     public UUID getParentNsiId() {
@@ -35,6 +37,10 @@ public class InternalModifyNssiRequest extends GenericInstantiateNssiRequest {
 
     public UpdateConfigurationRequest getUpdateConfigurationRequest() {
         return updateConfigurationRequest;
+    }
+
+    public UUID getOperationId() {
+        return operationId;
     }
 
     public NST getParentNst() {

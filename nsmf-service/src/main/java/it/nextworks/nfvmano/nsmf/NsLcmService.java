@@ -26,10 +26,9 @@ import it.nextworks.nfvmano.catalogue.template.messages.nst.QueryNsTemplateRespo
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceInstance;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NssiNotifType;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmConfigInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NssiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.NsmfNotificationMessage;
@@ -46,9 +45,11 @@ import it.nextworks.nfvmano.nsmf.ra.ResourceAllocationComputeService;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 
 
+import it.nextworks.nfvmano.nsmf.record.elements.ConfigurationRequestRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatus;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetInstanceRecord;
+import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,15 +67,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import it.nextworks.nfvmano.catalogue.template.elements.NsTemplateInfo;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
-public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotificationConsumerInterface {
+public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfigInterface, NssiLcmNotificationConsumerInterface {
 
     private static final Logger log = LoggerFactory.getLogger(NsLcmService.class);
 
     @Autowired
     private NsiRecordService nsiRecordService;
+
+    @Autowired
+    private ConfigurationRequestRepo configurationRequestRepo;
     
     @Value("${spring.rabbitmq.host}")
     private String rabbitHost;
@@ -266,7 +271,7 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
     }
 
     @Override
-    public void updateNetworkSlice(UpdateConfigurationRequest request, String tenantId) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+    public UUID configureNetworkSlice(UpdateConfigurationRequest request, String tenantId) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
         log.debug("Processing network slice configuration request");
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -277,20 +282,27 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
 
         request.isValid();
         UUID nsiId = request.getNsiId();
+        ConfigurationRequestRecord configurationRequestRecord = new ConfigurationRequestRecord(ConfigurationRequestStatus.IN_PROGRESS, nsiId,
+                request.getActionType());
+        configurationRequestRepo.saveAndFlush(configurationRequestRecord);
         if (nsLcmManagers.containsKey(nsiId)) {
             NetworkSliceInstanceRecord record = nsiRecordService.getNetworkSliceInstanceRecord(nsiId);
             if (record.getStatus() != NetworkSliceInstanceRecordStatus.INSTANTIATED) {
-                log.error("Network slice " + nsiId + " not in INSTANTIATED  state. Cannot UPDATE it. Skipping message.");
+                log.error("Network slice " + nsiId + " not in INSTANTIATED  state. Cannot CONFIGURE it. Skipping message.");
                 throw new NotPermittedOperationException("Network slice " + nsiId + " not in INSTANTIATED state. Current status:"+record.getStatus());
             }
-            String topic = "nslifecycle.updatens." + nsiId;
-            EngineUpdateNsiRequest internalMessage = new EngineUpdateNsiRequest(request.getNstId(),
+            String topic = "nslifecycle.configurens." + nsiId;
+            EngineUpdateNsiRequest internalMessage = new EngineUpdateNsiRequest(configurationRequestRecord.getId(),
+                    request.getNstId(),
                     request.getNssiId(),
                     request, request.getSliceSubnetType());
             try {
                 sendMessageToQueue(internalMessage, topic);
+                return configurationRequestRecord.getId();
+
             } catch (JsonProcessingException e) {
-                this.manageNsError(nsiId, "Error while translating internal NS instantiation message in Json format.");
+                this.manageNsError(nsiId, "Error while translating internal NS configuration message in Json format.");
+                throw  new FailedOperationException("Error while translating internal NS configuration message in Json format.");
             }
         } else {
             log.error("Unable to find Network Slice LCM Manager for NSI ID " + nsiId + ". Unable to instantiate the NSI.");
@@ -318,11 +330,15 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
                 NetworkSliceInstanceRecord nsiRecord = nsiRecordService.getNetworkSliceInstanceRecord(nssiRecord.getNsiId());
 
                 log.debug("NSS " + nssiId + " is associated to network slice " + nsiRecord.getId()+". Sending message to queue");
+                EngineNotifyNssiStatusChange internalMessage = null;
                 String topic = "nslifecycle.notifynss." + nsiRecord.getId();
-                EngineNotifyNssiStatusChange internalMessage = new EngineNotifyNssiStatusChange(nssiStatusChange.getNssiId(),
-                        nssiStatusChange.getNssiNotifType(),
-                        !nssiStatusChange.getNssiNotifType().equals(NssiNotifType.ERROR),
-                        nssiStatusChange.getNssiStatus());
+                if(true){
+                    internalMessage = new EngineNotifyNssiStatusChange(nssiStatusChange.getNssiId(),
+                            nssiStatusChange.getNssiNotifType(),
+                            !nssiStatusChange.getNssiNotifType().equals(NssiNotifType.ERROR),
+                            nssiStatusChange.getNssiStatus());
+                }
+
                 sendMessageToQueue(internalMessage, topic);
 
 
@@ -357,7 +373,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
                 this,
                 notificationDispatcher,
                 resourceAllocationProvider,
-                driverRegistry
+                driverRegistry,
+                configurationRequestRepo
 
 
                 );
@@ -432,5 +449,10 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NssiLcmNotifi
         }
     }
 
-    
+
+    public List<ConfigurationOperation> queryConfigurationOperation() {
+        log.debug("Received query for the Configuration Operations");
+        return configurationRequestRepo.findAll().stream().map(cr -> cr.getConfigurationOperation()).collect(Collectors.toList());
+
+    }
 }

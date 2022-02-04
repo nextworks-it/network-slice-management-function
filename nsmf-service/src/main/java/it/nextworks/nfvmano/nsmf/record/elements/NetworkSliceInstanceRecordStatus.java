@@ -46,6 +46,12 @@ public enum NetworkSliceInstanceRecordStatus {
             return NetworkSliceInstanceStatus.INSTANTIATING;
         }
     },
+    CONFIGURING{
+        @Override
+        public NetworkSliceInstanceStatus asNsiStatus() {
+            return NetworkSliceInstanceStatus.CONFIGURING;
+        }
+    },
     CONFIGURING_MONITORING{
         @Override
         public NetworkSliceInstanceStatus asNsiStatus() {

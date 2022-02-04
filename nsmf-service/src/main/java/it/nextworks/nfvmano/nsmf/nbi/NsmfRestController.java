@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.ConfigurationOperation;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.NetworkSliceSubnetInstance;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.NsmfNotificationMessage;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.UpdateConfigurationRequest;
@@ -201,6 +202,26 @@ public class NsmfRestController {
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
+
+	@ResponseStatus(HttpStatus.OK)
+	@RequestMapping(value = "/operations", method = RequestMethod.GET)
+	public ResponseEntity<?> geOperations(Authentication auth) {
+		log.debug("Received query for all operations.");
+		try {
+			String tenantId = getUserFromAuth(auth);
+			Map<String, String> parameters = new HashMap<String, String>();
+			Filter filter = new Filter(parameters);
+			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
+			List<ConfigurationOperation> ops = nsLcmService.queryConfigurationOperation();
+
+			return new ResponseEntity<List<ConfigurationOperation>>(ops, HttpStatus.OK);
+
+		} catch (Exception e) {
+			log.error("query configuration operations failed due to internal errors.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
 	@RequestMapping(value = "/ns/{nsiId}/action/instantiate", method = RequestMethod.PUT)
 	public ResponseEntity<?> instantiateNsi(@PathVariable String nsiId, @RequestBody InstantiateNsiRequest request, Authentication auth) {
@@ -225,13 +246,13 @@ public class NsmfRestController {
 	}
 
 
-	@RequestMapping(value = "/ns/{nsiId}/action/update", method = RequestMethod.PUT)
-	public ResponseEntity<?> updateNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
+	@RequestMapping(value = "/ns/{nsiId}/action/configure", method = RequestMethod.PUT)
+	public ResponseEntity<?> configureNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
 		log.debug("Received request to configure network slice " + nsiId);
 		try {
 			String tenantId = getUserFromAuth(auth);
-			nsLcmService.updateNetworkSlice(request, tenantId);
-			return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			UUID operationId= nsLcmService.configureNetworkSlice(request, tenantId);
+			return new ResponseEntity<>(operationId.toString(), HttpStatus.ACCEPTED);
 		} catch (NotExistingEntityException e) {
 			log.error("NS configuration failed due to missing elements in DB.");
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

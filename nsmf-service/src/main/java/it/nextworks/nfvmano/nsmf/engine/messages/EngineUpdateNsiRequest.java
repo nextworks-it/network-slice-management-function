@@ -19,13 +19,16 @@ public class EngineUpdateNsiRequest extends NsmfEngineMessage{
     @JsonProperty("sliceSubnetType")
     private ConfigSliceSubnetType sliceSubnetType;
 
-    @JsonProperty("updateConfigurationRequest")
 
+    private UUID configurationRequestId;
+    @JsonProperty("updateConfigurationRequest")
     private UpdateConfigurationRequest updateConfigurationRequest;
 
 
     @JsonCreator
-    public EngineUpdateNsiRequest(@JsonProperty("nstId") String nstId,
+    public EngineUpdateNsiRequest(
+            @JsonProperty("configurationRequestId") UUID configurationRequestId,
+            @JsonProperty("nstId") String nstId,
                                   @JsonProperty("nssiId") UUID nssiId,
                                   @JsonProperty("updateConfigurationRequest")UpdateConfigurationRequest updateConfigurationRequest,
                                   @JsonProperty("sliceSubnetType") ConfigSliceSubnetType sliceSubnetType) {
@@ -34,6 +37,11 @@ public class EngineUpdateNsiRequest extends NsmfEngineMessage{
         this.nssiId = nssiId;
         this.updateConfigurationRequest =updateConfigurationRequest;
         this.sliceSubnetType=sliceSubnetType;
+        this.configurationRequestId= configurationRequestId;
+    }
+
+    public UUID getConfigurationRequestId() {
+        return configurationRequestId;
     }
 
     public ConfigSliceSubnetType getSliceSubnetType() {
