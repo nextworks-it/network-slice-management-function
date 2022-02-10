@@ -55,11 +55,11 @@ public class TransportNssmfRestClient extends NssmfRestClient {
                         Map<String, String> curTAlloc = new HashMap<>();
                         String transportLink = null;
                         if(tsAllocation.getTransportFlowType().equals(TransportFlowType.TERRESTRIAL)){
-                            transportLink= "transport_ter";
+                            transportLink= TransportFlowType.TERRESTRIAL.toString();
 
                         }else if(tsAllocation.getTransportFlowType().equals(TransportFlowType.SATELLITE)){
-                            transportLink= "transport_sat";
-                            curTAlloc.put("transport-id", "transport_ter");
+                            transportLink= TransportFlowType.SATELLITE.toString();
+
                         }
                         curTAlloc.put("transport-id", transportLink);
                         if(tsAllocation.isActive())

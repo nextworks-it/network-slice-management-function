@@ -7,8 +7,8 @@
         "allocationType": "COMPUTE",
         "nsstId": "nsst_core",
         "vnfPlacement": {
-          "UPF-A": "vim-id",
-          "UPF-I": "vim-id-edge"
+          "UPF-A": "fad9a74b-093f-433c-a64b-b10f3377026e",
+          "UPF-I": "2c1841b9-5144-4b64-8afd-911956dda572"
         }
       },
       {
@@ -17,7 +17,7 @@
         "transportAllocations": [
           {
             "transportFlowType": "TERRESTRIAL",
-            "default": true
+            "active": true
           },
           {
             "transportFlowType": "SATELLITE",
@@ -30,8 +30,8 @@
         "allocationType": "COMPUTE",
         "nsstId": "nsst_app",
         "vnfPlacement": {
-          "core": "vim-id",
-          "edge": "vim-id-edge"
+          "core": "fad9a74b-093f-433c-a64b-b10f3377026e",
+          "edge": "2c1841b9-5144-4b64-8afd-911956dda572"
         }
       }
 
