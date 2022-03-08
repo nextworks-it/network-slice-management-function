@@ -3,8 +3,10 @@ package it.nextworks.nfvmano.nsmf.record.elements;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.VirtualLinkResourceAllocation;
+import it.nextworks.nfvmano.libs.vs.common.topology.SupportedServiceClassifier;
 
 import javax.persistence.Embeddable;
+import java.util.Map;
 
 @Embeddable
 public class VirtualLinkResourceAllocationRecord {
@@ -15,6 +17,7 @@ public class VirtualLinkResourceAllocationRecord {
     private String virtualLinkId;
     private String ingressSipId;
     private String egressSipId;
+    private Map<SupportedServiceClassifier, String> serviceClassifierAllocation;
     private String defaultGw;
     private boolean isDefault;
 
@@ -27,6 +30,7 @@ public class VirtualLinkResourceAllocationRecord {
                                          String virtualLinkId,
                                          String ingressSipId,
                                          String egressSipId,
+                                         Map<SupportedServiceClassifier, String> serviceClassifierAllocation,
                                          String defaultGw,
                                          boolean isDefault
                                          ){
@@ -35,6 +39,7 @@ public class VirtualLinkResourceAllocationRecord {
         this.virtualLinkId=virtualLinkId;
         this.ingressSipId=ingressSipId;
         this.egressSipId=egressSipId;
+        this.serviceClassifierAllocation=serviceClassifierAllocation;
         this.defaultGw = defaultGw;
         this.isDefault = isDefault;
 
@@ -82,6 +87,6 @@ public class VirtualLinkResourceAllocationRecord {
 
 
     public VirtualLinkResourceAllocation getVirtualResourceAllocation(){
-        return new VirtualLinkResourceAllocation(nsdId, virtualLinkId, ingressSipId, egressSipId, defaultGw, isDefault);
+        return new VirtualLinkResourceAllocation(nsdId, virtualLinkId, ingressSipId, egressSipId, serviceClassifierAllocation, defaultGw, isDefault);
     }
 }

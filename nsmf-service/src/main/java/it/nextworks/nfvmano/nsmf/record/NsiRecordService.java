@@ -106,7 +106,7 @@ public class NsiRecordService {
         if(resourceAllocation.getAllocationType().equals(NssResourceAllocationType.COMPUTE)){
             for(VirtualLinkResourceAllocation vl: ((ComputeNssResourceAllocation)resourceAllocation).getvLinkResources()){
                 vlRecords.add(new VirtualLinkResourceAllocationRecord(vl.getNsdId(), vl.getVirtualLinkId(), vl.getIngressSipId(), vl.getEgressSipId(),
-                        vl.getDefaultGw(), vl.isDefault()));
+                        vl.getServiceClassifierAllocation(), vl.getDefaultGw(), vl.isDefault()));
             }
             vnfPlacement=((ComputeNssResourceAllocation)resourceAllocation).getVnfPlacement();
 

@@ -81,7 +81,7 @@ public class NetworkSliceInstanceRecord {
     public NetworkSliceInstance getNetworkSliceInstance(){
         return new NetworkSliceInstance(this.id, this.getNetworkSliceSubnetInstanceIds().stream()
                 .map(e -> e.getNssiIdentifier())
-                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString(),nstId, name  );
+                .collect(Collectors.toList()), vsInstanceId, status.asNsiStatus(),status.toString());
     }
 
 
