@@ -1,9 +1,6 @@
 package it.nextworks.nfvmano.nsmf.ra.algorithms.rest.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.ExternalAlgorithmRequest;
+import it.nextworks.nfvmano.libs.vs.common.ra.elements.ExternalAlgorithmRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
@@ -33,17 +30,7 @@ public class ResourceAllocationRestClient {
             header.add("Cookie", this.cookies);
         }
 
-        ObjectMapper mapper=new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String policyString="";
-        try {
-            policyString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(request);
-        } catch (JsonProcessingException e){
-            log.error("Cannot serialize policy");
-            return null;
-        }
-        log.debug(policyString);
-        HttpEntity<?> httpEntity = new HttpEntity<>(policyString, header);
+        HttpEntity<?> httpEntity = new HttpEntity<>(request, header);
 
         try {
             //log.info("URL performing the request to: "+url);
