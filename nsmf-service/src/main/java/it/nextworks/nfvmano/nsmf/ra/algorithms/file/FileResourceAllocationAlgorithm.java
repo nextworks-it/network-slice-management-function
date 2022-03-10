@@ -43,7 +43,7 @@ public class FileResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
             ObjectMapper mapper = new ObjectMapper();
             ResourceAllocationComputeResponse defaultResponse = mapper.readValue(resource, ResourceAllocationComputeResponse.class);
             NsResourceAllocation nsResourceAllocation = new NsResourceAllocation(UUID.randomUUID().toString(),request.getNsiId(), defaultResponse.getNsResourceAllocation().getNssResourceAllocations() );
-            ResourceAllocationComputeResponse response = new ResourceAllocationComputeResponse(nsResourceAllocation, true);
+            ResourceAllocationComputeResponse response = new ResourceAllocationComputeResponse(request.getRequestId(), nsResourceAllocation, true);
 
             Thread thread = new Thread(new Runnable() {
                 @Override
