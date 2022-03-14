@@ -11,6 +11,7 @@ import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocatio
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.policy.RAPolicyMatchRequest;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
+import it.nextworks.nfvmano.nsmf.ra.algorithms.external.AUTH.AuthResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.file.FileResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.StaticAlgorithmNXW;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.record.StaticRaResponseRepository;
@@ -54,11 +55,20 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
         ResourceAllocationProvider algorithm=null;
         if(policy.isPresent()){
             log.debug("Using algorithm:"+policy.get().getAlgorithmType()+" from policy");
-            if(policy.get().getAlgorithmType()== RAAlgorithmType.STATIC){
-               algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
-            } else if(policy.get().getAlgorithmType()== RAAlgorithmType.FILE){
-                algorithm= new FileResourceAllocationAlgorithm(this);
-            }else throw new FailedOperationException("Unkown algorithm RA type: "+policy.get().getAlgorithmType());
+            switch(policy.get().getAlgorithmType()){
+                case STATIC:
+                    algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
+                    break;
+                case FILE:
+                    algorithm= new FileResourceAllocationAlgorithm(this);
+                    break;
+                case AUTH:
+                    algorithm= new AuthResourceAllocationAlgorithm(this);
+                    break;
+                default:
+                    throw new FailedOperationException("Unkown algorithm RA type: "+policy.get().getAlgorithmType());
+            }
+
         }else{
             log.debug("No policy found, using default RA algorithm");
             if(RAAlgorithmType.STATIC.equals(defaultRaAlgorithm)){
