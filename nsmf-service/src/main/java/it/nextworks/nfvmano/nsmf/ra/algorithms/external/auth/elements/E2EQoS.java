@@ -1,4 +1,4 @@
-package it.nextworks.nfvmano.nsmf.ra.algorithms.external.AUTH.elements;
+package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.elements;
 
 public class E2EQoS {
 

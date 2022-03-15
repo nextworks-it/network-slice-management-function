@@ -11,7 +11,7 @@ import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocatio
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.policy.RAPolicyMatchRequest;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
-import it.nextworks.nfvmano.nsmf.ra.algorithms.external.AUTH.AuthResourceAllocationAlgorithm;
+import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.AuthResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.file.FileResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.StaticAlgorithmNXW;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.record.StaticRaResponseRepository;
