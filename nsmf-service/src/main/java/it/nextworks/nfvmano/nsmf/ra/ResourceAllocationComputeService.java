@@ -10,7 +10,9 @@ import it.nextworks.nfvmano.libs.vs.common.ra.interfaces.ResourceAllocationProvi
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.policy.RAPolicyMatchRequest;
+import it.nextworks.nfvmano.libs.vs.common.utils.DynamicClassManager;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
+import it.nextworks.nfvmano.nsmf.ra.algorithms.BaseResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.AuthResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.file.FileResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.StaticAlgorithmNXW;
@@ -21,8 +23,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,8 +51,45 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
     @Autowired
     private StaticRaResponseRepository staticRaResponseRepository;
 
+    @Autowired
+    private Environment env;
+
+    @Value("${ra.external.algorithm}")
+    private String externalRaAlgorithm;
+
+    /**
+     * Instantiate a specialized event handler defined by the specializedEventHandlerClass
+     * @return A generic NssLcmEventHandler object
+     * @throws IllegalAccessException
+     * @throws InstantiationException
+     * @throws ClassNotFoundException
+     */
+    private BaseResourceAllocationAlgorithm instantiateRAExternalAlgorithm() throws IllegalAccessException, InstantiationException,
+            ClassNotFoundException {
+        return (BaseResourceAllocationAlgorithm) DynamicClassManager.instantiateFromString(this.externalRaAlgorithm);
+
+    }
+    @PostConstruct
+    private void loadConfig(){
+        log.info("Startup Configuration loading");
+        try{
+            if(!DynamicClassManager.checkClassType(this.externalRaAlgorithm, BaseResourceAllocationAlgorithm.class)){
+                log.error("Error in loading class "+ this.externalRaAlgorithm + ": NOT compatible with " +
+                        BaseResourceAllocationAlgorithm.class.getName() + "\n NSMF is shutting down!");
+                System.exit(0);
+            }
+            log.debug("Class "+ this.externalRaAlgorithm + ": is compatible with " + BaseResourceAllocationAlgorithm.class.getName());
+
+        } catch (ClassNotFoundException e) {
+            log.error("Error in loading class "+ this.externalRaAlgorithm + ": class NOT Found!\nNSMF is shutting down");
+            System.exit(0);
+        }
+
+    }
+
     @Override
-    public void computeResources(ResourceAllocationComputeRequest request) throws NotExistingEntityException, FailedOperationException, MalformattedElementException {
+    public void computeResources(ResourceAllocationComputeRequest request) throws NotExistingEntityException, FailedOperationException, MalformattedElementException, IllegalAccessException, InstantiationException,
+            ClassNotFoundException {
         log.debug("Processing request to compute RA");
         NetworkSliceInstanceRecord record = networkSliceInstanceRepo.findById(UUID.fromString(request.getNsiId())).get();
         Optional<ResourceAllocationPolicy> policy = resourceAllocationPolicyMgmt.findMatchingPolicy(new RAPolicyMatchRequest(record.getNstId(), request.getTenant(), null));
@@ -62,8 +103,8 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
                 case FILE:
                     algorithm= new FileResourceAllocationAlgorithm(this);
                     break;
-                case AUTH:
-                    algorithm= new AuthResourceAllocationAlgorithm(this);
+                case EXTERNAL:
+                    algorithm= this.instantiateRAExternalAlgorithm();
                     break;
                 default:
                     throw new FailedOperationException("Unkown algorithm RA type: "+policy.get().getAlgorithmType());

@@ -1,22 +1,29 @@
 package it.nextworks.nfvmano.nsmf.record.elements;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.VirtualLinkResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.topology.SupportedServiceClassifier;
 
-import javax.persistence.Embeddable;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.Map;
 
-@Embeddable
+@Entity
 public class VirtualLinkResourceAllocationRecord {
 
-
+    @Id
+    @JsonIgnore
+    @GeneratedValue
+    private Long id;
 
     private String nsdId;
     private String virtualLinkId;
     private String ingressSipId;
     private String egressSipId;
+    @ElementCollection(targetClass=String.class)
     private Map<SupportedServiceClassifier, String> serviceClassifierAllocation;
     private String defaultGw;
     private boolean isDefault;

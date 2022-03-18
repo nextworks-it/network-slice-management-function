@@ -277,7 +277,7 @@ public class NsLcmManager {
         }
     }
 
-    private void processInstantiateNsiRequest(InstantiateNsiRequestMessage em)  {
+    private void processInstantiateNsiRequest(InstantiateNsiRequestMessage em){
         log.debug("Processing Instantiate NSI Request");
         try {
             NetworkSliceInstanceRecord record = nsiRecordService.getNetworkSliceInstanceRecord(em.getRequest().getNsiId());
@@ -293,7 +293,7 @@ public class NsLcmManager {
 
 
 
-        } catch (NotExistingEntityException | FailedOperationException | MalformattedElementException e) {
+        } catch (NotExistingEntityException | FailedOperationException | MalformattedElementException | InstantiationException | ClassNotFoundException | IllegalAccessException e) {
            failInstance(e.getMessage());
         }
 

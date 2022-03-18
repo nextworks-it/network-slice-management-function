@@ -22,10 +22,9 @@ public class ResourceAllocationRestClient {
 
     }
 
-    private ResponseEntity<String> performHTTPRequest(Object request, String url, HttpMethod httpMethod/*, String tenantID*/) {
+    private ResponseEntity<String> performHTTPRequest(Object request, String url, HttpMethod httpMethod) {
         HttpHeaders header = new HttpHeaders();
         header.add("Content-Type", "application/json");
-        //performAuth(tenantID);
         if (this.cookies != null) {
             header.add("Cookie", this.cookies);
         }
@@ -33,11 +32,9 @@ public class ResourceAllocationRestClient {
         HttpEntity<?> httpEntity = new HttpEntity<>(request, header);
 
         try {
-            //log.info("URL performing the request to: "+url);
             ResponseEntity<String> httpResponse =
                     restTemplate.exchange(url, httpMethod, httpEntity, String.class);
             HttpStatus code = httpResponse.getStatusCode();
-            //log.info("Response code: " + httpResponse.getStatusCode().toString());
             return httpResponse;
         } catch (RestClientException e) {
             log.info("Message received: " + e.getMessage());
@@ -66,6 +63,6 @@ public class ResourceAllocationRestClient {
         log.debug("Sending request to compute resource allocation to external algorithm");
         String url=externalAlgorithmBaseUrl+"/computeResourceAllocation";
         ResponseEntity<String> httpResponse= performHTTPRequest(request, url, HttpMethod.PUT);
-        return manageHTTPResponse(httpResponse, "Error while computing resource allocation", "Resource allocation request arrived", HttpStatus.ACCEPTED);
+        return manageHTTPResponse(httpResponse, "Error while computing resource allocation", "Resource allocation computation started", HttpStatus.ACCEPTED);
     }
 }
