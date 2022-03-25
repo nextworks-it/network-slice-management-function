@@ -1,7 +1,7 @@
 package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.driver;
 
-import it.nextworks.nfvmano.libs.ifa.descriptors.nsd.Nsd;
-import it.nextworks.nfvmano.libs.ifa.descriptors.vnfd.Vnfd;
+import it.nextworks.nfvmano.libs.descriptors.sol006.Nsd;
+import it.nextworks.nfvmano.libs.descriptors.sol006.Vnfd;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NSST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NstServiceProfile;
@@ -103,10 +103,10 @@ public class AuthRequestTranslator {
         List<String> vnfdIds=nsd.getVnfdId();
         for(String vnfdId: vnfdIds) {
             for (Vnfd vnfd : vnfdList)
-                if (vnfd.getVnfdId().equals(vnfdId)) {
+                if (vnfd.getId().equals(vnfdId)) {
                     vnf.setVnfdId(vnfdId);
-                    vnf.setType(vnfd.getVnfProductInfoDescription());
-                    vnf.setCpuResources(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu());
+                    vnf.setType(vnfd.getProductInfoDescription());
+                    vnf.setCpuResources(Integer.getInteger(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu()));
                     //Here it has to be added the maximum throughput available
                     break;
                 }
@@ -117,7 +117,7 @@ public class AuthRequestTranslator {
     public void setSfcs(NST nst, List<Nsd> nsdList){
         List<Sfc> sfcs=new ArrayList<>();
         Nsd nsd=getVappNsd(nst, nsdList);
-        Sfc sfc=new Sfc("sfc-"+nsd.getNsdIdentifier(), nsd.getNsdName(), nsd.getVnfdId());
+        Sfc sfc=new Sfc("sfc-"+nsd.getId(), nsd.getName(), nsd.getVnfdId());
         sfcs.add(sfc);
         authRequest.setSfcList(sfcs);
     }
@@ -142,7 +142,7 @@ public class AuthRequestTranslator {
                 break;
             }
         for(Nsd nsd: nsdList)
-            if(nsd.getNsdIdentifier().equals(nsdId))
+            if(nsd.getId().equals(nsdId))
                 return nsd;
         return null;
     }

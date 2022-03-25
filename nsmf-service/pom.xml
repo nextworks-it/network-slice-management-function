@@ -44,6 +44,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -53,15 +54,18 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
+
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>1.5.18</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -83,7 +87,6 @@
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>vs-common-libs</artifactId>
             <version>0.0.1</version>
-
         </dependency>
 
         <dependency>
@@ -91,24 +94,30 @@
             <artifactId>nfv-mano-libs-templates</artifactId>
             <version>0.0.3-SNAPSHOT</version>
         </dependency>
+
         <dependency>
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>NsTemplatesCatalogue</artifactId>
             <version>0.0.3-SNAPSHOT</version>
-
         </dependency>
+
         <dependency>
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>SebastianMgmtCatalogue</artifactId>
             <version>0.0.2-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>it.nextworks.nfvmano</groupId>
+            <artifactId>NfvManoLibsSol006Descriptors</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
-
-
     </dependencies>
 
 
