@@ -8,7 +8,7 @@ public class Node {
 
     private String nodeId;
     private ExtNodeType type;
-    private Map<String, Float> position; // key: X or Y, value: real position
+    private Map<String, Double> position; // key: X or Y, value: real position
     private ProcessingCapabilities processingCapabilities;
     private Map<String, Integer> processingInfra;
 
@@ -16,7 +16,7 @@ public class Node {
 
     public Node(String nodeId,
                 ExtNodeType nodeType,
-                Map<String, Float> position,
+                Map<String, Double> position,
                 ProcessingCapabilities processingCapabilities,
                 Map<String, Integer> processingInfra) {
         this.nodeId = nodeId;
@@ -42,11 +42,11 @@ public class Node {
         this.type = type;
     }
 
-    public Map<String, Float> getPosition() {
+    public Map<String, Double> getPosition() {
         return position;
     }
 
-    public void setPosition(Map<String, Float> position) {
+    public void setPosition(Map<String, Double> position) {
         this.position = position;
     }
 

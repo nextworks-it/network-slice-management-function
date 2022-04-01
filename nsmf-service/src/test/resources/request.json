@@ -1,0 +1,766 @@
+{
+  "requestId": "request-1",
+  "nsiId": "nsi-test",
+  "nst": {
+    "nstId": "5g-complete-1",
+    "nstName": "5g-complete-RA-test",
+    "nstVersion": "v.0.0.1",
+    "nstProvider": "Nextworks",
+    "operationalState": false,
+    "administrativeState": null,
+    "nstServiceProfileList": [
+      {
+        "serviceProfileId": "service-profile-1",
+        "maxNumberofUEs": 15000,
+        "latency": 50,
+        "resourceSharingLevel": true,
+        "sST": "URLLC",
+        "availability": 7.68,
+        "delayTolerance": false,
+        "deterministicComm": {
+          "detCommAvailability": false
+        },
+        "dLThptPerSlice": 150000,
+        "dLThptPerUE": 50000,
+        "guaThpt": 500000.0,
+        "maxThpt": 1150000.0,
+        "uLThptPerSlice": 1000000,
+        "uLThptPerUE": 15000,
+        "maxPktSize": 3500,
+        "maxNumberofConns": 200000,
+        "kPIMonitoringList": [
+          3.0,
+          5.72,
+          4.91
+        ],
+        "survivalTime": "30 days"
+      }
+    ],
+    "nsst": {
+      "nsstId": "nsst-e2e",
+      "operationalState": false,
+      "administrativeState": null,
+      "sliceProfileList": [
+        {
+          "sliceProfileId": null,
+          "pLMNIdList": null,
+          "eMBBPerfReq": null,
+          "uRLLCPerfReq": null,
+          "maxNumberofUEs": 15000,
+          "coverageAreaTAList": null,
+          "latency": 300,
+          "uEMobilityLevel": null,
+          "resourceSharingLevel": true
+        },
+        {
+          "sliceProfileId": null,
+          "pLMNIdList": null,
+          "eMBBPerfReq": null,
+          "uRLLCPerfReq": null,
+          "maxNumberofUEs": 15000,
+          "coverageAreaTAList": null,
+          "latency": 10,
+          "uEMobilityLevel": null,
+          "resourceSharingLevel": true
+        }
+      ],
+      "nsstList": [
+        {
+          "nsstId": "nsst-vapp",
+          "operationalState": false,
+          "sliceProfileList": [
+            {
+              "sliceProfileId": "slice-profile-1",
+              "pLMNIdList": null,
+              "eMBBPerfReq": null,
+              "uRLLCPerfReq": null,
+              "maxNumberofUEs": 15000,
+              "coverageAreaTAList": null,
+              "latency": 10,
+              "uEMobilityLevel": null,
+              "resourceSharingLevel": true
+            }
+          ],
+          "type": "VAPP",
+          "nsdInfo": {
+            "nsdId": "ae3c115c-0423-40b3-8623-a993de1e9d03",
+            "nsdName": "edge_cache_nsd",
+            "nsdDescription": "A simple firewall",
+            "nsdVersion": "v0.0.1"
+          }
+        }
+      ],
+      "type": "E2E"
+    }
+  },
+  "tenant": "NXW",
+  "topology":{
+    "nodes":[
+      {
+        "nodeId": 1,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "PNF",
+        "pnfId": "",
+        "pnfInstanceId": "",
+        "pnfType": "gNB",
+        "processingCapabilities": "EDGE",
+        "additionalProperties":{
+          "position": {
+            "X": 0.0,
+            "Y": 500.0
+          },
+          "cores":8,
+          "GFLOPS": 440.0
+        }
+      },
+      {
+        "nodeId": 2,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "PNF",
+        "pnfId": "",
+        "pnfInstanceId": "",
+        "pnfType": "SC",
+        "processingCapabilities": "EDGE",
+        "additionalProperties":{
+          "position": {
+            "X": 317.0731,
+            "Y": 329.959
+          },
+          "cores":10,
+          "GFLOPS": 550.0
+        }
+      },
+      {
+        "nodeId": 3,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "PNF",
+        "pnfId": "",
+        "pnfInstanceId": "",
+        "pnfType": "SC",
+        "processingCapabilities": "EDGE",
+        "additionalProperties":{
+          "position": {
+            "X": 202.4335,
+            "Y": 301.7651
+          },
+          "cores": 8,
+          "GFLOPS": 440.0
+        }
+      },
+      {
+        "nodeId": 4,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "COMPUTE",
+        "processingCapabilities": "CLOUD",
+        "additionalProperties":{
+          "position": {
+            "X": 304.8611,
+            "Y": 347.1526
+          },
+          "cores": 64,
+          "GFLOPS": 3520
+        }
+      },
+      {
+        "nodeId": 5,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "COMPUTE",
+        "processingCapabilities": "CLOUD",
+        "additionalProperties":{
+          "position": {
+            "X": 261.6536,
+            "Y": 425.9471
+          },
+          "cores": 48,
+          "GFLOPS": 2640
+        }
+      },
+      {
+        "nodeId": 6,
+        "zoneId": "",
+        "powerState": "POWER_OFF",
+        "cps": null,
+        "mapOnepSipUuids": null,
+        "supportedProtocolLayers": null,
+        "nodeType": "COMPUTE",
+        "processingCapabilities": "FOG",
+        "additionalProperties":{
+          "position": {
+            "X": 352.2497,
+            "Y": 633.5754
+          },
+          "cores": 24,
+          "GFLOPS": 1320
+        }
+      }
+    ],
+    "links":[
+      {
+        "linkId": "link-1",
+        "source": {
+          "nodeId": 1,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "gNB",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 0.0,
+              "Y": 500.0
+            },
+            "cores":8,
+            "GFLOPS": 440.0
+          }
+        },
+        "destination": {
+          "nodeId": 3,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "SC",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 202.4335,
+              "Y": 301.7651
+            },
+            "cores": 8,
+            "GFLOPS": 440.0
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 2038.79,
+        "linkType": "WIRELESS",
+        "delay": 0.006279364999999999
+      },
+      {
+        "linkId": "link-2",
+        "source": {
+          "nodeId": 1,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "gNB",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 0.0,
+              "Y": 500.0
+            },
+            "cores":8,
+            "GFLOPS": 440.0
+          }
+        },
+        "destination": {
+          "nodeId": 4,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "CLOUD",
+          "additionalProperties":{
+            "position": {
+              "X": 304.8611,
+              "Y": 347.1526
+            },
+            "cores": 64,
+            "GFLOPS": 3520
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 10000.0,
+        "linkType": "WIRED",
+        "delay": 0.009712587
+      },
+      {
+        "linkId": "link-3",
+        "source": {
+          "nodeId": 1,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "gNB",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 0.0,
+              "Y": 500.0
+            },
+            "cores":8,
+            "GFLOPS": 440.0
+          }
+        },
+        "destination": {
+          "nodeId": 6,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "FOG",
+          "additionalProperties":{
+            "position": {
+              "X": 352.2497,
+              "Y": 633.5754
+            },
+            "cores": 24,
+            "GFLOPS": 1320
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 10000.0,
+        "linkType": "WIRED",
+        "delay": 0.006986244
+      },
+      {
+        "linkId": "link-3",
+        "source": {
+          "nodeId": 2,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "SC",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 317.0731,
+              "Y": 329.959
+            },
+            "cores":10,
+            "GFLOPS": 550.0
+          }
+        },
+        "destination": {
+          "nodeId": 3,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "SC",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 202.4335,
+              "Y": 301.7651
+            },
+            "cores": 8,
+            "GFLOPS": 440.0
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 2081.53,
+        "linkType": "WIRELESS",
+        "delay": 0.006138424
+      },
+      {
+        "linkId": "link-4",
+        "source": {
+          "nodeId": 2,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "SC",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 317.0731,
+              "Y": 329.959
+            },
+            "cores":10,
+            "GFLOPS": 550.0
+          }
+        },
+        "destination": {
+          "nodeId": 5,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "CLOUD",
+          "additionalProperties":{
+            "position": {
+              "X": 261.6536,
+              "Y": 425.9471
+            },
+            "cores": 48,
+            "GFLOPS": 2640
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 10000.00,
+        "linkType": "WIRED",
+        "delay": 0.006110506
+      },
+      {
+        "linkId": "link-5",
+        "source": {
+          "nodeId": 3,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "PNF",
+          "pnfId": "",
+          "pnfInstanceId": "",
+          "pnfType": "SC",
+          "processingCapabilities": "EDGE",
+          "additionalProperties":{
+            "position": {
+              "X": 202.4335,
+              "Y": 301.7651
+            },
+            "cores": 8,
+            "GFLOPS": 440.0
+          }
+        },
+        "destination": {
+          "nodeId": 6,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "FOG",
+          "additionalProperties":{
+            "position": {
+              "X": 352.2497,
+              "Y": 633.5754
+            },
+            "cores": 24,
+            "GFLOPS": 1320
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 3234.78,
+        "linkType": "WIRELESS",
+        "delay": 0.0037799820000000003
+      },
+      {
+        "linkId": "link-6",
+        "source": {
+          "nodeId": 4,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "CLOUD",
+          "additionalProperties":{
+            "position": {
+              "X": 304.8611,
+              "Y": 347.1526
+            },
+            "cores": 64,
+            "GFLOPS": 3520
+          }
+        },
+        "destination": {
+          "nodeId": 5,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "CLOUD",
+          "additionalProperties":{
+            "position": {
+              "X": 261.6536,
+              "Y": 425.9471
+            },
+            "cores": 48,
+            "GFLOPS": 2640
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 10000.00,
+        "linkType": "WIRED",
+        "delay": 0.00832604
+      },
+      {
+        "linkId": "link-7",
+        "source": {
+          "nodeId": 5,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "CLOUD",
+          "additionalProperties":{
+            "position": {
+              "X": 261.6536,
+              "Y": 425.9471
+            },
+            "cores": 48,
+            "GFLOPS": 2640
+          }
+        },
+        "destination": {
+          "nodeId": 6,
+          "zoneId": "",
+          "powerState": "POWER_OFF",
+          "cps": null,
+          "mapOnepSipUuids": null,
+          "supportedProtocolLayers": null,
+          "nodeType": "COMPUTE",
+          "processingCapabilities": "FOG",
+          "additionalProperties":{
+            "position": {
+              "X": 352.2497,
+              "Y": 633.5754
+            },
+            "cores": 24,
+            "GFLOPS": 1320
+          }
+        },
+        "sourceCp": null,
+        "destinationCp": null,
+        "power": null,
+        "bandwith": 10000.00,
+        "linkType": "WIRED",
+        "delay": 0.009458743
+      }
+    ]
+  },
+  "nsds": [
+    {
+      "id":"ae3c115c-0423-40b3-8623-a993de1e9d03",
+      "invariant-id":"ae3c115c-0423-40b3-8623-a993de1e9d03",
+      "name":"edge_cache_nsd",
+      "designer":"NXW",
+      "version":"1.0",
+      "vnfd-id":[
+        "5d14868f-4603-4fd9-a540-ec9939d340e3"
+      ],
+      "virtual-link-desc":[
+        {
+          "id":"upf-net"
+        },
+        {
+          "id":"cdn-net"
+        }
+      ],
+      "df":[
+        {
+          "id":"default-df",
+          "vnf-profile":[
+            {
+              "id":1,
+              "vnfd-id":"5d14868f-4603-4fd9-a540-ec9939d340e3",
+              "virtual-link-connectivity":[
+                {
+                  "virtual-link-profile-id":"upf-net",
+                  "constituent-cpd-id":[
+                    {
+                      "constituent-base-element-id":1,
+                      "constituent-cpd-id":"ens3"
+                    }
+                  ]
+                },
+                {
+                  "virtual-link-profile-id":"cdn-net",
+                  "constituent-cpd-id":[
+                    {
+                      "constituent-base-element-id":1,
+                      "constituent-cpd-id":"ens7"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "vnfds": [
+    {
+      "id": "5d14868f-4603-4fd9-a540-ec9939d340e3",
+      "product-name": "edge_cache_vnfd",
+      "product-info-name": "edge_cache_vnfd",
+      "product-info-description": "Edge Cache VNF for testing purpose.",
+      "provider": "NXW",
+      "version": "1.0",
+      "ext-cpd": [
+        {
+          "id": "ens3",
+          "description": "upf-net",
+          "int-cpd": {
+            "vdu-id": "edge_cache_vnfd-VM",
+            "cpd": "in"
+          },
+          "layer-protocol": [
+            "ipv4"
+          ],
+          "virtual-network-interface-requirement": [
+            {
+              "network-interface-requirements": [
+                {
+                  "key": "isManagement",
+                  "value": "true"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ens7",
+          "description": "cdn-net",
+          "int-cpd": {
+            "vdu-id": "edge_cache_vnfd-VM",
+            "cpd": "out"
+          },
+          "layer-protocol": [
+            "ipv4"
+          ]
+        }
+      ],
+      "virtual-compute-desc": [
+        {
+          "id": "CP",
+          "virtual-memory": {
+            "size": "2.0"
+          },
+          "virtual-cpu": {
+            "num-virtual-cpu": "2"
+          }
+        }
+      ],
+      "virtual-storage-desc": [
+        {
+          "id": "root",
+          "type-of-storage": "root-storage",
+          "size-of-storage": "28"
+        }
+      ],
+      "vdu": [
+        {
+          "id": "edge_cache_vnfd-VM",
+          "name": "edge_cache_vnfd-VM",
+          "virtual-compute-desc": "CP",
+          "virtual-storage-desc": [
+            "root"
+          ],
+          "sw-image-desc": "CP",
+          "int-cpd": [
+            {
+              "id": "in",
+              "layer-protocol": [
+                "ipv4"
+              ]
+            },
+            {
+              "id": "out",
+              "layer-protocol": [
+                "ipv4"
+              ]
+            }
+          ]
+        }
+      ],
+      "df": [
+        {
+          "id": "default_df",
+          "vdu-profile": [
+            {
+              "id": "edge_cache_vnfd-VM",
+              "min-number-of-instances": "1",
+              "max-number-of-instances": "1"
+            }
+          ],
+          "instantiation-level": [
+            {
+              "id": "il-1",
+              "vdu-level": [
+                {
+                  "vdu-id": "edge_cache_vnfd-VM",
+                  "number-of-instances": "1"
+                }
+              ]
+            }
+          ],
+          "default-instantiation-level": "il-1"
+        }
+      ]
+    }
+  ]
+}

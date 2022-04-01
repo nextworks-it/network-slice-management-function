@@ -1,5 +1,6 @@
 package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.driver;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.nextworks.nfvmano.libs.descriptors.sol006.Nsd;
 import it.nextworks.nfvmano.libs.descriptors.sol006.Vnfd;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NSST;
@@ -12,23 +13,20 @@ import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.elements.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class AuthRequestTranslator {
     private static final Logger log = LoggerFactory.getLogger(AuthRequestTranslator.class);
     private AuthExternalAlgorithmRequest authRequest;
+    private ObjectMapper mapper;
 
     public AuthRequestTranslator(){
         this.authRequest=new AuthExternalAlgorithmRequest();
-    }
-
-    public AuthExternalAlgorithmRequest getAuthRequest() {
-        return authRequest;
-    }
-
-    public void setAuthRequest(AuthExternalAlgorithmRequest authRequest) {
-        this.authRequest = authRequest;
+        this.mapper=new ObjectMapper();
     }
 
     public AuthExternalAlgorithmRequest translateRAComputeRequest(ResourceAllocationComputeRequest request){
@@ -46,6 +44,14 @@ public class AuthRequestTranslator {
 
     public void setNodes(NetworkTopology topology){
         List<Node> nodes=new ArrayList<>();
+        ExternalProperties externalProperties =new ExternalProperties();
+        try {
+            externalProperties = mapper.readValue(new File("/home/nicola/network-slice-management-function/nsmf-service/src/main/resources/externalProperties.json"), ExternalProperties.class);
+            System.out.println(mapper.writeValueAsString(externalProperties));
+        } catch (IOException e){
+            e.printStackTrace();
+            log.error("Error during external properties deserialization");
+        }
 
         for(TopologyNode node: topology.getNodes()) {
             Node n = new Node();
@@ -67,6 +73,13 @@ public class AuthRequestTranslator {
                         n.setType(ExtNodeType.SC);
                     n.setProcessingCapabilities(((Pnf) node).getProcessingCapabilities());
             }
+            for(Map<String, Object> entry: externalProperties.getExternalProperties()){
+                if((entry.get("nodeId")).toString().equals(node.getNodeId())){
+                    Map<String, Object> properties=(Map<String, Object>) entry.get("externalProperties");
+                    n.setPosition((Map<String, Double>) properties.get("position"));
+                    n.setProcessingInfra((Map<String, Integer>) properties.get("processingInfra"));
+                }
+            }
             nodes.add(n);
         }
         authRequest.setNodeList(nodes);
@@ -87,9 +100,11 @@ public class AuthRequestTranslator {
                 else if (d.getNodeId().equals(n.getNodeId()))
                     link.setDestination(n);
             if(l.getLinkType().equals(LinkType.WIRED)){
+                link.setLinkType(LinkType.WIRED);
                 link.setBandwidth(l.getBandwidth());
                 link.setDelay(l.getDelay());
-            }
+            } else
+                link.setLinkType(LinkType.WIRELESS);
             links.add(link);
         }
 
@@ -99,19 +114,22 @@ public class AuthRequestTranslator {
     public void setVnfs(NST nst, List<Nsd> nsdList, List<Vnfd> vnfdList){
         List<Vnf> vnfs=new ArrayList<>();
         Nsd nsd=getVappNsd(nst, nsdList);
-        Vnf vnf=new Vnf();
         List<String> vnfdIds=nsd.getVnfdId();
         for(String vnfdId: vnfdIds) {
-            for (Vnfd vnfd : vnfdList)
+            for (Vnfd vnfd : vnfdList) {
+                Vnf vnf = new Vnf();
                 if (vnfd.getId().equals(vnfdId)) {
                     vnf.setVnfdId(vnfdId);
                     vnf.setType(vnfd.getProductInfoDescription());
-                    vnf.setCpuResources(Integer.getInteger(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu()));
+                    System.out.println(vnfd.getProductInfoDescription());
+                    vnf.setCpuResources(Integer.valueOf(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu()));
                     //Here it has to be added the maximum throughput available
+                    vnfs.add(vnf);
                     break;
                 }
-            vnfs.add(vnf);
+            }
         }
+        authRequest.setVnfs(vnfs);
     }
 
     public void setSfcs(NST nst, List<Nsd> nsdList){

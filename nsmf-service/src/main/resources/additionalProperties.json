@@ -1,0 +1,82 @@
+{
+  "externalProperties": [
+    {
+      "nodeId": 1,
+      "additionalProperties": {
+        "position": {
+          "X": 0.0,
+          "Y": 500.0
+        },
+        "processingInfra": {
+          "cores": 8,
+          "GFLOPS": 440
+        }
+      }
+    },
+    {
+      "nodeId": 2,
+      "additionalProperties":{
+        "position": {
+          "X": 317.0731,
+          "Y": 329.959
+        },
+        "processingInfra":{
+          "cores":10,
+          "GFLOPS": 550
+        }
+      }
+    },
+    {
+      "nodeId": 3,
+      "additionalProperties":{
+        "position": {
+          "X": 202.4335,
+          "Y": 301.7651
+        },
+        "processingInfra": {
+          "cores": 8,
+          "GFLOPS": 440
+        }
+      }
+    },
+    {
+      "nodeId": 4,
+      "additionalProperties":{
+        "position": {
+          "X": 304.8611,
+          "Y": 347.1526
+        },
+        "processingInfra": {
+          "cores": 64,
+          "GFLOPS": 3520
+        }
+      }
+    },
+    {
+      "nodeId": 5,
+      "additionalProperties":{
+        "position": {
+          "X": 261.6536,
+          "Y": 425.9471
+        },
+        "processingInfra": {
+          "cores": 48,
+          "GFLOPS": 2640
+        }
+      }
+    },
+    {
+      "nodeId": 6,
+      "additionalProperties": {
+        "position": {
+          "X": 352.2497,
+          "Y": 633.5754
+        },
+        "processingInfra": {
+          "cores": 24,
+          "GFLOPS": 1320
+        }
+      }
+    }
+  ]
+}
