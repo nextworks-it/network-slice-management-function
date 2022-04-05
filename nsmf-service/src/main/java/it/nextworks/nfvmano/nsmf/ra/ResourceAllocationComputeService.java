@@ -109,14 +109,21 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
                 default:
                     throw new FailedOperationException("Unkown algorithm RA type: "+policy.get().getAlgorithmType());
             }
-
         }else{
             log.debug("No policy found, using default RA algorithm");
-            if(RAAlgorithmType.STATIC.equals(defaultRaAlgorithm)){
-                algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
-            }else if (RAAlgorithmType.FILE.equals(defaultRaAlgorithm)) {
-                algorithm = new FileResourceAllocationAlgorithm(this);
-            }else throw new FailedOperationException("Unkown algorithm RA type: "+defaultRaAlgorithm);
+            switch(defaultRaAlgorithm) {
+                case STATIC:
+                    algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
+                    break;
+                case FILE:
+                    algorithm = new FileResourceAllocationAlgorithm(this);
+                    break;
+                case EXTERNAL:
+                    algorithm = this.instantiateRAExternalAlgorithm();
+                    break;
+                default:
+                    throw new FailedOperationException("Unkown algorithm RA type: " + policy.get().getAlgorithmType());
+            }
         }
 
         algorithm.computeResources(request);

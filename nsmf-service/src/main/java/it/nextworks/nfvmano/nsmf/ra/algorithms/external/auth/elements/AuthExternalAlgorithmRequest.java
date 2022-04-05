@@ -2,6 +2,7 @@ package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.elements;
 
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.ExternalAlgorithmRequest;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
@@ -13,13 +14,15 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
     private List<Sfc> sfcList;
     private E2EQoS e2eQoS;
     private Map<String, Float> pnfParameters;
+    private List<Map<String, BigInteger>> port_power;
 
     public AuthExternalAlgorithmRequest(){}
 
     public AuthExternalAlgorithmRequest(String requestId,
                                         List<Node> nodes, List<Link> linkList,
                                         List<Vnf> vnfs, List<Sfc> sfcList,
-                                        E2EQoS e2eQoS, Map<String, Float> pnfParameters){
+                                        E2EQoS e2eQoS, Map<String, Float> pnfParameters,
+                                        List<Map<String, BigInteger>> port_power){
         this.setRequestId(requestId);
         this.nodeList =nodes;
         this.linkList=linkList;
@@ -27,6 +30,7 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
         this.sfcList=sfcList;
         this.e2eQoS=e2eQoS;
         this.pnfParameters=pnfParameters;
+        this.port_power=port_power;
     }
 
     public List<Node> getNodeList() {
@@ -75,5 +79,13 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
 
     public void setPnfParameters(Map<String, Float> pnfParameters) {
         this.pnfParameters = pnfParameters;
+    }
+
+    public List<Map<String, BigInteger>> getPort_power() {
+        return port_power;
+    }
+
+    public void setPort_power(List<Map<String, BigInteger>> port_power) {
+        this.port_power = port_power;
     }
 }

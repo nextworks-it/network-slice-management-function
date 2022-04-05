@@ -13,6 +13,7 @@ import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.elements.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,14 +24,26 @@ public class AuthRequestTranslator {
     private static final Logger log = LoggerFactory.getLogger(AuthRequestTranslator.class);
     private AuthExternalAlgorithmRequest authRequest;
     private ObjectMapper mapper;
+    private ExternalProperties externalProperties;
 
     public AuthRequestTranslator(){
         this.authRequest=new AuthExternalAlgorithmRequest();
         this.mapper=new ObjectMapper();
     }
 
+    public void readExternalProperties(){
+        try {
+            this.externalProperties = mapper.readValue(new File("/home/nicola/network-slice-management-function/nsmf-service/src/main/resources/externalProperties.json"), ExternalProperties.class);
+            System.out.println(mapper.writeValueAsString(externalProperties));
+        } catch (IOException e){
+            e.printStackTrace();
+            log.error("Error during external properties deserialization");
+        }
+    }
+
     public AuthExternalAlgorithmRequest translateRAComputeRequest(ResourceAllocationComputeRequest request){
         log.debug("Received request to translate resource allocation compute request with ID {} into AUTH request", request.getRequestId());
+        readExternalProperties();
         authRequest.setRequestId(request.getRequestId());
 
         setNodes(request.getTopology());
@@ -38,31 +51,26 @@ public class AuthRequestTranslator {
         setVnfs(request.getNst(), request.getNsds(), request.getVnfds());
         setSfcs(request.getNst(), request.getNsds());
         setE2EQoS(request.getNst());
+        authRequest.setPnfParameters(externalProperties.getPnfParameters());
+        authRequest.setPort_power(externalProperties.getPort_power());
 
         return authRequest;
     }
 
     public void setNodes(NetworkTopology topology){
         List<Node> nodes=new ArrayList<>();
-        ExternalProperties externalProperties =new ExternalProperties();
-        try {
-            externalProperties = mapper.readValue(new File("/home/nicola/network-slice-management-function/nsmf-service/src/main/resources/externalProperties.json"), ExternalProperties.class);
-            System.out.println(mapper.writeValueAsString(externalProperties));
-        } catch (IOException e){
-            e.printStackTrace();
-            log.error("Error during external properties deserialization");
-        }
 
         for(TopologyNode node: topology.getNodes()) {
             Node n = new Node();
             n.setNodeId(node.getNodeId());
             switch (node.getNodeType()) {
                 case COMPUTE:
-                    n.setType(ExtNodeType.COMPUTE);
+                    n.setType(ExtNodeType.REGULAR);
                     n.setProcessingCapabilities(((ComputeNode) node).getProcessingCapabilities());
                     break;
                 case SWITCH:
-                    n.setType(ExtNodeType.SWITCH);
+                    n.setType(ExtNodeType.REGULAR);
+                    n.setProcessingCapabilities(ProcessingCapabilities.NONE);
                     break;
                 case PNF:
                     if (((Pnf) node).getPnfType().equals(PnfType.gNB))
@@ -75,9 +83,8 @@ public class AuthRequestTranslator {
             }
             for(Map<String, Object> entry: externalProperties.getExternalProperties()){
                 if((entry.get("nodeId")).toString().equals(node.getNodeId())){
-                    Map<String, Object> properties=(Map<String, Object>) entry.get("externalProperties");
-                    n.setPosition((Map<String, Double>) properties.get("position"));
-                    n.setProcessingInfra((Map<String, Integer>) properties.get("processingInfra"));
+                    n.setPosition((Map<String, Double>) entry.get("position"));
+                    n.setProcessingInfra((Map<String, Double>) entry.get("processingInfra"));
                 }
             }
             nodes.add(n);
