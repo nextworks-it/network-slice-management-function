@@ -31,8 +31,9 @@ public class ResourceAllocationPolicyService implements ResourceAllocationPolicy
     @Autowired
     private ResourceAllocationPolicyRepo resourceAllocationPolicyRepo;
 
-    @Value("${nsmf.ra.default_algorithm:FILE}")
-    private String defaultAlgorithm;
+    @Value("${resource_allocation.default_algorithm:STATIC}")
+    private RAAlgorithmType defaultRaAlgorithm;
+
     @Override
     public UUID onboardResourceAllocationPolicy(OnboardRAPolicyRequest request) throws MalformattedElementException, AlreadyExistingEntityException {
         log.debug("Processing request to Onboard a new RA policy");
@@ -77,14 +78,14 @@ public class ResourceAllocationPolicyService implements ResourceAllocationPolicy
 
     @PostConstruct
     private void onboardDefaultPolicy(){
-        log.debug("Onboarding default RA policy with default algorithm:"+defaultAlgorithm);
+        log.debug("Onboarding default RA policy with default algorithm:"+ defaultRaAlgorithm);
         ResourceAllocationPolicy policy = new ResourceAllocationPolicy(null,
                 null,
                 null,
                 null,
                 null,
                 null,
-                RAAlgorithmType.valueOf(defaultAlgorithm),
+                defaultRaAlgorithm,
                 null,
                 true
         );

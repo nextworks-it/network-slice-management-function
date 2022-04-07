@@ -51,6 +51,7 @@ import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatu
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
+import it.nextworks.nfvmano.nsmf.topology.InfrastructureTopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -104,6 +105,9 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
 
     @Autowired
     private NssmfDriverRegistry driverRegistry;
+
+    @Autowired
+    private InfrastructureTopologyService infrastructureTopologyService;
     //internal map of VS LCM Managers
     //each VS LCM Manager is created when a new VSI ID is created and removed when the VSI ID is removed
     private Map<UUID, NsLcmManager> nsLcmManagers = new HashMap<>();
@@ -374,9 +378,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
                 notificationDispatcher,
                 resourceAllocationProvider,
                 driverRegistry,
-                configurationRequestRepo
-
-
+                configurationRequestRepo,
+                infrastructureTopologyService
                 );
         createQueue(nsiId, nsLcmManager);
         nsLcmManagers.put(nsiId, nsLcmManager);

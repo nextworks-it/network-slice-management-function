@@ -12,8 +12,8 @@ import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocatio
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.policy.RAPolicyMatchRequest;
 import it.nextworks.nfvmano.libs.vs.common.utils.DynamicClassManager;
 import it.nextworks.nfvmano.nsmf.NsLcmService;
+import it.nextworks.nfvmano.nsmf.nfvcatalogue.NfvoCatalogueClient;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.BaseResourceAllocationAlgorithm;
-import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.AuthResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.file.FileResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.StaticAlgorithmNXW;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.stat.record.StaticRaResponseRepository;
@@ -27,6 +27,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,14 +46,14 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
     @Autowired
     private NsLcmService nsLcmService;
 
-    @Value("${resource_allocation.default_algorithm:STATIC}")
-    private RAAlgorithmType defaultRaAlgorithm;
-
     @Autowired
     private StaticRaResponseRepository staticRaResponseRepository;
 
     @Autowired
     private Environment env;
+
+    @Autowired
+    private NfvoCatalogueClient nfvoCatalogueClient;
 
     @Value("${ra.external.algorithm}")
     private String externalRaAlgorithm;
@@ -94,6 +95,7 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
         NetworkSliceInstanceRecord record = networkSliceInstanceRepo.findById(UUID.fromString(request.getNsiId())).get();
         Optional<ResourceAllocationPolicy> policy = resourceAllocationPolicyMgmt.findMatchingPolicy(new RAPolicyMatchRequest(record.getNstId(), request.getTenant(), null));
         ResourceAllocationProvider algorithm=null;
+
         if(policy.isPresent()){
             log.debug("Using algorithm:"+policy.get().getAlgorithmType()+" from policy");
             switch(policy.get().getAlgorithmType()){
@@ -105,27 +107,16 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
                     break;
                 case EXTERNAL:
                     algorithm= this.instantiateRAExternalAlgorithm();
+                    try {
+                        algorithm.getClass().getMethod("setParameters", ResourceAllocationComputeService.class, Environment.class, NfvoCatalogueClient.class).invoke(algorithm, this, env, nfvoCatalogueClient);
+                    }catch (NoSuchMethodException | InvocationTargetException e){
+                        log.error("No such method");
+                    }
                     break;
                 default:
                     throw new FailedOperationException("Unkown algorithm RA type: "+policy.get().getAlgorithmType());
             }
-        }else{
-            log.debug("No policy found, using default RA algorithm");
-            switch(defaultRaAlgorithm) {
-                case STATIC:
-                    algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
-                    break;
-                case FILE:
-                    algorithm = new FileResourceAllocationAlgorithm(this);
-                    break;
-                case EXTERNAL:
-                    algorithm = this.instantiateRAExternalAlgorithm();
-                    break;
-                default:
-                    throw new FailedOperationException("Unkown algorithm RA type: " + policy.get().getAlgorithmType());
-            }
         }
-
         algorithm.computeResources(request);
 
     }

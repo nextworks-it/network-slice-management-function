@@ -1,6 +1,7 @@
 package it.nextworks.nfvmano.nsmf.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NSST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
@@ -13,6 +14,7 @@ import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.interfaces.ResourceAllocationProvider;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
+import it.nextworks.nfvmano.libs.vs.common.topology.NetworkTopology;
 import it.nextworks.nfvmano.nsmf.engine.messages.*;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 import it.nextworks.nfvmano.nsmf.record.elements.ConfigurationRequestRecord;
@@ -23,6 +25,7 @@ import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalInstantiateNssiRequest;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalModifyNssiRequest;
+import it.nextworks.nfvmano.nsmf.topology.InfrastructureTopologyService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +44,7 @@ public class NsLcmManager {
     private NsiRecordService nsiRecordService;
     private ConfigurationRequestRepo configurationRequestRepo;
     private NsmfLcmProvisioningInterface nsmfLcmProvisioningInterface;
-
+    private InfrastructureTopologyService infrastructureTopologyService;
     private NsiLcmNotificationConsumerInterface nsiLcmNotificationConsumerInterface;
     private ResourceAllocationProvider resourceAllocationProvider;
     private NssmfDriverRegistry driverRegistry;
@@ -57,7 +60,8 @@ public class NsLcmManager {
                         NsiLcmNotificationConsumerInterface nsiLcmNotificationConsumerInterface,
                         ResourceAllocationProvider resourceAllocationProvider,
                         NssmfDriverRegistry driverRegistry,
-                        ConfigurationRequestRepo configurationRequestRepo) {
+                        ConfigurationRequestRepo configurationRequestRepo,
+                        InfrastructureTopologyService infrastructureTopologyService) {
         this.networkSliceInstanceId = networkSliceInstanceId;
         this.nst = nst;
         this.nsiRecordService = nsiRecordService;
@@ -66,6 +70,7 @@ public class NsLcmManager {
         this.resourceAllocationProvider=resourceAllocationProvider;
         this.driverRegistry= driverRegistry;
         this.configurationRequestRepo=configurationRequestRepo;
+        this.infrastructureTopologyService=infrastructureTopologyService;
     }
 
 
@@ -286,7 +291,7 @@ public class NsLcmManager {
                nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId,
                        NetworkSliceInstanceRecordStatus.COMPUTING_RESOURCE_ALLOCATION,
                        null);
-                resourceAllocationProvider.computeResources(new ResourceAllocationComputeRequest(this.networkSliceInstanceId.toString(), em.getTenantId()));
+                resourceAllocationProvider.computeResources(composeRAComputeRequest(em.getTenantId()));
             }else{
                 log.warn("Received Instantiate NSI request in wrong status:"+ record.getStatus()+". Ignoring");
             }
@@ -374,8 +379,14 @@ public class NsLcmManager {
 
     }
 
+    private ResourceAllocationComputeRequest composeRAComputeRequest(String tenantId){
+        String requestId=UUID.randomUUID().toString();
+        NetworkTopology topology=infrastructureTopologyService.getInfrastructureTopology();
 
+        //TO-DO: implements the mechanism to retrieve sharable slices
 
+        return new ResourceAllocationComputeRequest(requestId, networkSliceInstanceId.toString(), nst, tenantId, null, topology);
+    }
 
 
     private NssmfLcmProvisioningInterface getNssmfLcmDriver(ResourceAllocationComputeResponse response, NSST targetNsst){

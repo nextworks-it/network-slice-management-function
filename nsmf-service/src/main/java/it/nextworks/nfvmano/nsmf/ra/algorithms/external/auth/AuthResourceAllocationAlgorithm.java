@@ -5,6 +5,7 @@ import it.nextworks.nfvmano.libs.vs.common.exceptions.MalformattedElementExcepti
 import it.nextworks.nfvmano.libs.vs.common.exceptions.NotExistingEntityException;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.RAAlgorithmType;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
+import it.nextworks.nfvmano.nsmf.nfvcatalogue.NfvoCatalogueClient;
 import it.nextworks.nfvmano.nsmf.ra.ResourceAllocationComputeService;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.BaseResourceAllocationAlgorithm;
 import it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.driver.AuthRequestTranslator;
@@ -22,11 +23,29 @@ public class AuthResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
     private ResourceAllocationRestClient restClient;
     private Environment env;
 
-    public AuthResourceAllocationAlgorithm(ResourceAllocationComputeService resourceAllocationComputeService, Environment env) {
+    public AuthResourceAllocationAlgorithm(){super();}
+
+    public AuthResourceAllocationAlgorithm(ResourceAllocationComputeService resourceAllocationComputeService, Environment env, NfvoCatalogueClient nfvoCatalogueClient) {
         super(resourceAllocationComputeService, type);
         this.env=env;
         this.baseUrl= env.getProperty("base.url.auth");
-        this.translator=new AuthRequestTranslator();
+        this.translator=new AuthRequestTranslator(nfvoCatalogueClient);
+        this.restClient=new ResourceAllocationRestClient(baseUrl);
+    }
+
+    /**
+     * Method required in all EXTERNAL Resource allocation algorithm to set parameters after dynamic instantiation of the algorithm
+     *
+     * @param resourceAllocationComputeService service to be pass to superclass
+     * @param env Environment to get value from application properties
+     * @param nfvoCatalogueClient NFVO Catalogue Client to retrieve NSD and VNFD
+     */
+    public void setParameters(ResourceAllocationComputeService resourceAllocationComputeService, Environment env, NfvoCatalogueClient nfvoCatalogueClient){
+        setResourceAllocationComputeService(resourceAllocationComputeService);
+        setType(type);
+        this.env=env;
+        this.baseUrl= env.getProperty("base.url.auth");
+        this.translator=new AuthRequestTranslator(nfvoCatalogueClient);
         this.restClient=new ResourceAllocationRestClient(baseUrl);
     }
 
