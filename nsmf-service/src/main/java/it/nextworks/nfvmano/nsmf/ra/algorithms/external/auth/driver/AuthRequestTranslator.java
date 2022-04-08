@@ -129,7 +129,6 @@ public class AuthRequestTranslator {
             Vnf vnf = new Vnf();
             vnf.setVnfdId(vnfdId);
             vnf.setType(vnfd.getProductInfoDescription());
-            System.out.println(vnfd.getProductInfoDescription());
             vnf.setCpuResources(Integer.valueOf(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu()));
             //Here it has to be added the maximum throughput available
             vnfs.add(vnf);
