@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -59,13 +58,35 @@ public class NsmfRestController {
 	
 	public NsmfRestController() { }
 	
-	@RequestMapping(value = "/ns", method = RequestMethod.POST)
-	public ResponseEntity<?> createNsId(@RequestBody CreateNsiIdRequest request, Authentication auth) {
+	@RequestMapping(value = "/ns/nst", method = RequestMethod.POST)
+	public ResponseEntity<?> createNsIdFromNst(@RequestBody CreateNsiIdRequest request, Authentication auth) {
 		log.debug("Received request to create a new network slice instance ID.");
 		try {
 			String tenantId = getUserFromAuth(auth);
-			UUID nsiId = nsLcmService.createNetworkSliceIdentifier(request, tenantId);
+			UUID nsiId = nsLcmService.createNetworkSliceIdentifierFromNst(request, tenantId);
 			return new ResponseEntity<>(nsiId, HttpStatus.CREATED);	
+		} catch (NotExistingEntityException e) {
+			log.error("NS ID creation failed due to missing elements in DB.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (MalformattedElementException e) {
+			log.error("NS ID creation failed due to bad-formatted request.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (NotPermittedOperationException e) {
+			log.error("NS ID creation failed due to missing permission.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (Exception e) {
+			log.error("NS ID creation failed due to internal errors.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/ns/nest", method = RequestMethod.POST)
+	public ResponseEntity<?> createNsIdFromNest(@RequestBody CreateNsiIdFromNestRequest request, Authentication auth){
+		log.debug("Received request to create a new network slice instance ID from NEST.");
+		try {
+			String tenantId = getUserFromAuth(auth);
+			UUID nsiId = nsLcmService.createNetworkSliceIdentifierFromNest(request, tenantId);
+			return new ResponseEntity<>(nsiId, HttpStatus.CREATED);
 		} catch (NotExistingEntityException e) {
 			log.error("NS ID creation failed due to missing elements in DB.");
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);

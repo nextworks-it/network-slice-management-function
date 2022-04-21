@@ -15,16 +15,20 @@
 
 package it.nextworks.nfvmano.nsmf;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import it.nextworks.nfvmano.catalogue.template.elements.GsTemplateInfo;
+import it.nextworks.nfvmano.catalogue.template.elements.NsTemplateInfo;
+import it.nextworks.nfvmano.catalogue.template.interfaces.NestCatalogueInterface;
 import it.nextworks.nfvmano.catalogue.template.interfaces.NsTemplateCatalogueInterface;
+import it.nextworks.nfvmano.catalogue.template.messages.nest.QueryNesTemplateResponse;
 import it.nextworks.nfvmano.catalogue.template.messages.nst.QueryNsTemplateResponse;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NST;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
+
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.*;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationConsumerInterface;
@@ -33,18 +37,18 @@ import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningIn
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NssiLcmNotificationConsumerInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.NsmfNotificationMessage;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.configuration.UpdateConfigurationRequest;
+import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.CreateNsiIdFromNestRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.CreateNsiIdRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.InstantiateNsiRequest;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.messages.provisioning.TerminateNsiRequest;
 import it.nextworks.nfvmano.libs.vs.common.query.elements.Filter;
 import it.nextworks.nfvmano.libs.vs.common.query.messages.GeneralizedQueryRequest;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
+
 import it.nextworks.nfvmano.nsmf.engine.messages.*;
 import it.nextworks.nfvmano.nsmf.manager.NsLcmManager;
 import it.nextworks.nfvmano.nsmf.ra.ResourceAllocationComputeService;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
-
-
 import it.nextworks.nfvmano.nsmf.record.elements.ConfigurationRequestRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecord;
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatus;
@@ -52,6 +56,7 @@ import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetInstanceRecor
 import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
 import it.nextworks.nfvmano.nsmf.topology.InfrastructureTopologyService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -66,7 +71,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import it.nextworks.nfvmano.catalogue.template.elements.NsTemplateInfo;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,6 +106,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
     @Autowired
     private NsTemplateCatalogueInterface nsTemplateCatalogueInterface;
 
+    @Autowired
+    private NestCatalogueInterface nestCatalogueInterface;
 
     @Autowired
     private NssmfDriverRegistry driverRegistry;
@@ -119,13 +125,13 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
     /********************************************************************************/
 
     @Override
-    public UUID createNetworkSliceIdentifier(CreateNsiIdRequest request, String tenantId)
+    public UUID createNetworkSliceIdentifierFromNst(CreateNsiIdRequest request, String tenantId)
     		throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
     	
     	log.debug("Processing request to create a new network slicer identifier");
     	request.isValid();
     	String nstId = request.getNstId();
-    	//TODO: Resolve NST Catalogue query interfaces
+        //TODO: Resolve NST Catalogue query interfaces
         Map<String, String> filterParams = new HashMap<>();
         filterParams.put("NST_ID", nstId);
         NsTemplateInfo nstInfo = null;
@@ -165,6 +171,42 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
         }
 
 
+    }
+
+    public UUID createNetworkSliceIdentifierFromNest(CreateNsiIdFromNestRequest request, String tenantId)
+            throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+
+        log.debug("Processing request to create a new network slicer identifier from NEST");
+        request.isValid();
+        String nestId= request.getNestId();
+
+        Map<String, String> filterParams = new HashMap<>();
+        filterParams.put("NST_ID", nestId);
+        GsTemplateInfo nestInfo=null;
+        String nstId=null;
+        try{
+            log.debug("Retrieving NEST INFO");
+            QueryNesTemplateResponse nesTemplateResponse =nestCatalogueInterface.queryNesTemplate(
+                    new it.nextworks.nfvmano.libs.ifa.common.messages.GeneralizedQueryRequest(new it.nextworks.nfvmano.libs.ifa.common.elements.Filter(filterParams), null));
+            nestInfo=nesTemplateResponse.getGsTemplateInfos().get(0);
+            nstId=nestInfo.getReferenceNstId();
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.MethodNotImplementedException e) {
+            throw new MethodNotImplementedException(e);
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.MalformattedElementException e) {
+            throw new MalformattedElementException(e);
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.NotExistingEntityException e) {
+            throw new NotExistingEntityException("NEST with ID:"+nestId+" not found in the catalogue");
+        } catch (it.nextworks.nfvmano.libs.ifa.common.exceptions.FailedOperationException e) {
+            throw new FailedOperationException(e);
+        }
+        if(nstId==null) {
+            log.error("Request received for a NEST does not translated from an NST");
+            throw new FailedOperationException("Request received for a NEST does not translated from an NST");
+        }
+
+        CreateNsiIdRequest nsiIdRequest=new CreateNsiIdRequest(nstId, request.getName(), request.getDescription(), request.getVsInstanceId());
+
+        return createNetworkSliceIdentifierFromNst(nsiIdRequest, tenantId);
     }
 
     @Override
