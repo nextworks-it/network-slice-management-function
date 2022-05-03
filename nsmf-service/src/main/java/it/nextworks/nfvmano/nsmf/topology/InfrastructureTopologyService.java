@@ -7,10 +7,13 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import it.nextworks.nfvmano.libs.vs.common.topology.NetworkTopology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class InfrastructureTopologyService {
@@ -27,7 +30,11 @@ public class InfrastructureTopologyService {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         try{
-            topology=mapper.readValue(new File("/home/nicola/network-slice-management-function/nsmf-app/src/main/resources/topology.json"), NetworkTopology.class);
+            String resourceName = "topology.json";
+            Resource resourceSpec = new ClassPathResource(resourceName);
+
+            InputStream resource = resourceSpec.getInputStream();
+            topology=mapper.readValue(resource, NetworkTopology.class);
         } catch (IOException e){
             e.printStackTrace();
         }

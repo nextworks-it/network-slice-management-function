@@ -32,6 +32,9 @@ public class NssmfDriverRegistry {
     @Value("${nssmf.plugin.vapp.address:http://localhost:8088}")
     private String vappPluginAddress;
 
+    @Value("${nssmf.plugin.dummy.address}")
+    private String dummyPluginAddress;
+
     @Value("${nssmf.type:REAL}")
     private String nssmfType;
 
@@ -56,6 +59,7 @@ public class NssmfDriverRegistry {
                 return new AppNssmfRestClient(address);
             }
         }
+        address=dummyPluginAddress;
         return new DummyNssmfClient(address);
 
     }

@@ -1,40 +1,16 @@
 {
-
+  "responseId": "response",
+  "successful": true,
   "nsResourceAllocation": {
-    "nsiId": "",
+    "nsiId": "34e3ee16-2b50-4227-95da-c244b51b9d11",
     "nssResourceAllocations": [
       {
+        "nsstId": "nsst-vapp",
         "allocationType": "COMPUTE",
-        "nsstId": "nsst_core",
         "vnfPlacement": {
-          "UPF-A": "fad9a74b-093f-433c-a64b-b10f3377026e",
-          "UPF-I": "2c1841b9-5144-4b64-8afd-911956dda572"
-        }
-      },
-      {
-        "allocationType": "TRANSPORT",
-        "nsstId": "nsst_transport",
-        "transportAllocations": [
-          {
-            "transportFlowType": "TERRESTRIAL",
-            "active": true
-          },
-          {
-            "transportFlowType": "SATELLITE",
-            "defaultGw": "default"
-
-          }
-        ]
-      },
-      {
-        "allocationType": "COMPUTE",
-        "nsstId": "nsst_app",
-        "vnfPlacement": {
-          "core": "fad9a74b-093f-433c-a64b-b10f3377026e",
-          "edge": "2c1841b9-5144-4b64-8afd-911956dda572"
+          "5d14868f-4603-4fd9-a540-ec9939d340e3": "node-1"
         }
       }
-
     ]
   }
 }

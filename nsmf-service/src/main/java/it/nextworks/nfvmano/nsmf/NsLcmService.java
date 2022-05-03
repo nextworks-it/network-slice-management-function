@@ -47,6 +47,7 @@ import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocatio
 
 import it.nextworks.nfvmano.nsmf.engine.messages.*;
 import it.nextworks.nfvmano.nsmf.manager.NsLcmManager;
+import it.nextworks.nfvmano.nsmf.nbi.VsmfNotifier;
 import it.nextworks.nfvmano.nsmf.ra.ResourceAllocationComputeService;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 import it.nextworks.nfvmano.nsmf.record.elements.ConfigurationRequestRecord;
@@ -114,6 +115,9 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
 
     @Autowired
     private InfrastructureTopologyService infrastructureTopologyService;
+
+    @Autowired
+    private VsmfNotifier vsmfNotifier;
     //internal map of VS LCM Managers
     //each VS LCM Manager is created when a new VSI ID is created and removed when the VSI ID is removed
     private Map<UUID, NsLcmManager> nsLcmManagers = new HashMap<>();
@@ -421,7 +425,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
                 resourceAllocationProvider,
                 driverRegistry,
                 configurationRequestRepo,
-                infrastructureTopologyService
+                infrastructureTopologyService,
+                vsmfNotifier
                 );
         createQueue(nsiId, nsLcmManager);
         nsLcmManagers.put(nsiId, nsLcmManager);
