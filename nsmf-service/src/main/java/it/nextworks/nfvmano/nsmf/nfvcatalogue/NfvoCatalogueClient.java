@@ -26,7 +26,7 @@ import java.util.List;
 public class NfvoCatalogueClient extends BaseRestClient {
     private final static Logger log= LoggerFactory.getLogger(NfvoCatalogueClient.class);
 
-    @Value("${5g.catalogue.baseurl}")
+    @Value("${nfvo.catalogue.baseurl}")
     private String catalogueBaseUrl;
 
     private ObjectMapper mapper;

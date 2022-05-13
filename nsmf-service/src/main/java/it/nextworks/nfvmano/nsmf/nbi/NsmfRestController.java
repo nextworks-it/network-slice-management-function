@@ -248,6 +248,9 @@ public class NsmfRestController {
 	public ResponseEntity<?> instantiateNsi(@PathVariable String nsiId, @RequestBody InstantiateNsiRequest request, Authentication auth) {
 		log.debug("Received request to instantiate network slice " + nsiId);
 		try {
+			if(!nsiId.equals(request.getNsiId().toString()))
+				throw new MalformattedElementException("NSI ID within path variable differs from request body ones");
+
 			String tenantId = getUserFromAuth(auth);
 			nsLcmService.instantiateNetworkSlice(request, tenantId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);	
@@ -271,6 +274,9 @@ public class NsmfRestController {
 	public ResponseEntity<?> configureNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
 		log.debug("Received request to configure network slice " + nsiId);
 		try {
+			if(!nsiId.equals(request.getNsiId()))
+				throw new MalformattedElementException("NSI ID within path variable differs from request body ones");
+
 			String tenantId = getUserFromAuth(auth);
 			UUID operationId= nsLcmService.configureNetworkSlice(request, tenantId);
 			return new ResponseEntity<>(operationId.toString(), HttpStatus.ACCEPTED);
@@ -295,6 +301,8 @@ public class NsmfRestController {
 	public ResponseEntity<?> terminateNsi(@PathVariable String nsiId, @RequestBody TerminateNsiRequest request, Authentication auth) {
 		log.debug("Received request to terminate network slice " + nsiId);
 		try {
+			if(!nsiId.equals(request.getNsiId()))
+				throw new MalformattedElementException("NSI ID within path differs from request body ones");
 			String tenantId = getUserFromAuth(auth);
 			nsLcmService.terminateNetworkSliceInstance(request, tenantId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);	
@@ -319,6 +327,8 @@ public class NsmfRestController {
 
 		log.debug("Received request to instantiate network slice " + nssiId);
 		try {
+			if (!nssiId.equals(request.getNssiId().toString()))
+				throw new MalformattedElementException("NSSI ID within path differs from request body ones");
 
 			nsLcmService.notifyNssStatusChange(request);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
