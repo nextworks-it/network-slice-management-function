@@ -1,14 +1,13 @@
 package it.nextworks.nfvmano.nsmf.sbi;
 
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NSST;
-import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceSubnetType;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.interfaces.NssmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
-import it.nextworks.nfvmano.nsmf.engine.messages.NotifyResourceAllocationResponse;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 import it.nextworks.nfvmano.nsmf.sbi.dummy.DummyNssmfClient;
 import it.nextworks.nfvmano.nsmf.sbi.specific.AppNssmfRestClient;
 import it.nextworks.nfvmano.nsmf.sbi.specific.CoreNssmfRestClient;
+import it.nextworks.nfvmano.nsmf.sbi.specific.OsmNssmfRestClient;
 import it.nextworks.nfvmano.nsmf.sbi.specific.TransportNssmfRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +25,7 @@ public class NssmfDriverRegistry {
 
     @Value("${nssmf.plugin.edge.address:http://localhost:8087}")
     private String edgePluginAddress;
+
     @Value("${nssmf.plugin.ran.address:http://localhost:8089}")
     private String ranPluginAddress;
 
@@ -35,32 +35,36 @@ public class NssmfDriverRegistry {
     @Value("${nssmf.plugin.dummy.address}")
     private String dummyPluginAddress;
 
-    @Value("${nssmf.type:REAL}")
+    @Value("${nssmf.plugin.osm.address}")
+    private String osmPluginAddress;
+
+    @Value("${nssmf.type:STANDARD}")
     private String nssmfType;
 
     @Autowired
     private NsiRecordService nsiRecordService;
     public NssmfLcmProvisioningInterface getNssmfLcmDriver(ResourceAllocationComputeResponse em, NSST targetNsst){
 
-        String address = "";
-        if(nssmfType.equals("REAL")) {
-            if (targetNsst.getType().equals(SliceSubnetType.CORE)) {
-                address = corePluginAddress;
-                return new CoreNssmfRestClient(address);
-            } else if (targetNsst.getType().equals(SliceSubnetType.TRANSPORT)) {
-                address = transportPluginAddress;
-                return new TransportNssmfRestClient(address, nsiRecordService);
-
-            } else if (targetNsst.getType().equals(SliceSubnetType.RAN)) {
-                address = ranPluginAddress;
+        switch (nssmfType){
+            case "STANDARD":
+                switch (targetNsst.getType()) {
+                    case RAN:
+                        return null;
+                    case TRANSPORT:
+                        return new TransportNssmfRestClient(transportPluginAddress, nsiRecordService);
+                    case CORE:
+                        return new CoreNssmfRestClient(corePluginAddress);
+                    case VAPP:
+                        return new AppNssmfRestClient(vappPluginAddress);
+                    default:
+                        return null;
+                }
+            case "OSM":
+                return new OsmNssmfRestClient(osmPluginAddress);
+            case "DUMMY":
+                return new DummyNssmfClient(dummyPluginAddress);
+            default:
                 return null;
-            } else if (targetNsst.getType().equals(SliceSubnetType.VAPP)) {
-                address = vappPluginAddress;
-                return new AppNssmfRestClient(address);
-            }
         }
-        address=dummyPluginAddress;
-        return new DummyNssmfClient(address);
-
     }
 }

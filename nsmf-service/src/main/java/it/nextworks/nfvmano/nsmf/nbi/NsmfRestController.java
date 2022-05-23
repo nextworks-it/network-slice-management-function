@@ -319,10 +319,10 @@ public class NsmfRestController {
 	}
 
 
-	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.PUT)
+	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.POST)
 	public ResponseEntity<?> notifyNssiStatusChange(@PathVariable String nssiId, @RequestBody NsmfNotificationMessage request, Authentication auth) {
 
-		log.debug("Received request to instantiate network slice " + nssiId);
+		log.debug("Received request to update status of network sub slice " + nssiId);
 		try {
 			if (!nssiId.equals(request.getNssiId().toString()))
 				throw new MalformattedElementException("NSSI ID within path differs from request body ones");

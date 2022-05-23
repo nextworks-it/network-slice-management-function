@@ -1,7 +1,19 @@
 package it.nextworks.nfvmano.nsmf.nbi;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import it.nextworks.nfvmano.libs.vs.common.vsmf.interfaces.VsmfNotificationInterface;
 import it.nextworks.nfvmano.libs.vs.common.vsmf.message.VsmfNotificationMessage;
+//import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +25,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.Cookie;
+import java.io.IOException;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class VsmfNotifier implements VsmfNotificationInterface {
@@ -69,6 +86,7 @@ class VsmfRestClient implements VsmfNotificationInterface{
         this.loginUrl=loginUrl;
         this.restTemplate=new RestTemplate();
     }
+
     boolean authenticate(String username, String password){
         log.info("Building http request to login");
         HttpHeaders headers = new HttpHeaders();
@@ -79,7 +97,7 @@ class VsmfRestClient implements VsmfNotificationInterface{
         map.add("password", password);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         try{
-            ResponseEntity<String> httpResponse = restTemplate.exchange(loginUrl, HttpMethod.POST, request, String.class);
+            ResponseEntity<String> httpResponse = restTemplate.exchange(URI.create(loginUrl), HttpMethod.POST, request, String.class);
             HttpHeaders headersResp = httpResponse.getHeaders();
             HttpStatus code = httpResponse.getStatusCode();
 
@@ -102,29 +120,82 @@ class VsmfRestClient implements VsmfNotificationInterface{
     public void notifyVsmf(VsmfNotificationMessage vsmfNotificationMessage) {
         HttpHeaders header = new HttpHeaders();
         header.add("Content-Type", "application/json");
+        header.add("Accept", "application/json");
 
-        if(authCookie!=null)
+        if (authCookie != null)
             header.add("Cookie", this.authCookie);
 
-        HttpEntity<?> postEntity = new HttpEntity<>(vsmfNotificationMessage, header);
-
         try {
+            ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            String message= mapper.writeValueAsString(vsmfNotificationMessage);
+            HttpEntity<?> postEntity = new HttpEntity<>(message, header);
+
+            String urlToNotify=notifyUrl;
+            if (notifyUrl.contains("%nsi_id%"))
+                urlToNotify = notifyUrl.replace("%nsi_id%", vsmfNotificationMessage.getNsiId().toString());
+
             log.debug("Sending HTTP message to notify network slice status change.");
+            log.debug("Notification to be send:\n" + mapper.writeValueAsString(postEntity));
+            log.debug("notification url: " + urlToNotify);
             ResponseEntity<String> httpResponse =
-                    restTemplate.exchange(notifyUrl, HttpMethod.POST, postEntity, String.class);
+                    restTemplate.exchange(urlToNotify, HttpMethod.POST, postEntity, String.class);
 
             log.debug("Response code: " + httpResponse.getStatusCode().toString());
             HttpStatus code = httpResponse.getStatusCode();
 
+            log.debug("Response\n" + mapper.writeValueAsString(httpResponse));
             if (code.equals(HttpStatus.OK)) {
                 log.debug("Notification correctly dispatched.");
             } else {
                 log.debug("Error while sending notification");
             }
         } catch (RestClientException e) {
+            e.printStackTrace();
             log.debug("Error while sending notification");
             log.debug(e.toString());
             log.debug("RestClientException response: Message " + e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+    /*@Override
+    public void notifyVsmf(VsmfNotificationMessage vsmfNotificationMessage) {
+
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        HttpPost httpPost = new HttpPost(notifyUrl);
+
+        ObjectMapper mapper=new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+
+        try {
+            String vsInstantiationRequestJson = mapper.writeValueAsString(vsmfNotificationMessage);
+            StringEntity stringEntity = new StringEntity(vsInstantiationRequestJson);
+
+            httpPost.setEntity(stringEntity);
+
+            httpPost.setHeader("Accept", "application/json");
+            httpPost.setHeader("Content-type", "application/json");
+
+            HttpClientContext context = HttpClientContext.create();
+            CloseableHttpResponse response;
+
+                response = httpClient.execute(httpPost, context);
+
+
+            if(response.getStatusLine().getStatusCode() != 200) {
+                HttpEntity httpEntity = response.getEntity();
+                String msg = "Authentication failed: " + EntityUtils.toString(httpEntity, "UTF-8");
+                log.error(msg);
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+            String msg = "NSSO Unreachable.";
+            log.error(msg);
+            return;
+        }
+    }*/
 }

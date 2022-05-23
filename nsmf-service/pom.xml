@@ -43,6 +43,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.6.7</version>
         </dependency>
 
         <dependency>
@@ -101,11 +102,11 @@
             <version>0.0.3-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>it.nextworks.nfvmano</groupId>
             <artifactId>SebastianMgmtCatalogue</artifactId>
             <version>0.0.2-SNAPSHOT</version>
-        </dependency>
+        </dependency-->
 
         <dependency>
             <groupId>it.nextworks.nfvmano</groupId>

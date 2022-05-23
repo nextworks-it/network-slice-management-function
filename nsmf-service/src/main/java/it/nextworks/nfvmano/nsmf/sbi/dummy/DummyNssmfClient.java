@@ -60,10 +60,10 @@ public class DummyNssmfClient extends NssmfRestClient {
                 }
 
                 NsmfNotificationMessage notificationMessage=new NsmfNotificationMessage(request.getNssiId(), NssiNotifType.STATUS_CHANGED, NssiStatus.INSTANTIATED);
-                boolean auth=authenticate("admin", "admin");
+                boolean auth=true; //authenticate("admin", "admin");
                 log.debug("Authenticated "+auth);
                 if(auth) {
-                    if (this.authCookie != null) {
+                    //if (this.authCookie != null) {
                         HttpHeaders header = new HttpHeaders();
                         header.add("Content-Type", "application/json");
                         header.add("Cookie", this.authCookie);
@@ -77,7 +77,7 @@ public class DummyNssmfClient extends NssmfRestClient {
                         try {
                             log.debug("Sending HTTP message to notify network slice status change.");
                             ResponseEntity<String> httpResponse =
-                                    restTemplate.exchange(url, HttpMethod.PUT, postEntity, String.class);
+                                    restTemplate.exchange(url, HttpMethod.POST, postEntity, String.class);
 
                             log.debug("Response code: " + httpResponse.getStatusCode().toString());
                             HttpStatus code = httpResponse.getStatusCode();
@@ -92,7 +92,7 @@ public class DummyNssmfClient extends NssmfRestClient {
                             log.debug(e.toString());
                             log.debug("RestClientException response: Message " + e.getMessage());
                         }
-                    } else log.debug("Authentication Required!");
+                    //} else log.debug("Authentication Required!");
                 }
             } else
                 throw new FailedOperationException("Could not find allocation for NSST:" + internalRequest.getNsst().getNsstId());

@@ -19,34 +19,30 @@ public class OsmNssmfRestClient extends NssmfRestClient {
         super(url);
     }
 
-
-    private NSST getNsst(NST nst, SliceSubnetType sliceSubnetType){
+    private NSST getNsst(NST nst, String nsstId){
         for(NSST nsst: nst.getNsst().getNsstList()){
-            if(nsst.getType() == sliceSubnetType){
+            if(nsst.getNsstId().equals(nsstId)){
                 return nsst;
             }
         }
         return null;
     }
+
     @Override
     public void instantiateNetworkSubSlice(NssmfBaseProvisioningMessage request) throws MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException, AlreadyExistingEntityException, NotExistingEntityException {
         if (request instanceof InternalInstantiateNssiRequest) {
             InternalInstantiateNssiRequest internalRequest = (InternalInstantiateNssiRequest) request;
             ResourceAllocationComputeResponse raResponse = internalRequest.getResourceAllocationComputeResponse();
-            raResponse.getNsResourceAllocation().getNssResourceAllocations().get(0).getAllocationType();
-            NSST nsstRan = getNsst(internalRequest.getParentNst(), SliceSubnetType.RAN); //TODO FIXX
+            NSST nsst = getNsst(internalRequest.getParentNst(), raResponse.getNsResourceAllocation().getNssResourceAllocations().get(0).getNsstId());
             OsmPayload osmPayload = new OsmPayload();
-            if (nsstRan!=null)
-            {
-            log.info("Requesting instantation of NSSI with UUID "+internalRequest.getNssiId().toString());
-            osmPayload.setNssiId(internalRequest.getNssiId());
-            osmPayload.setNsdId(nsstRan.getNsdInfo().getNsdId());
-    }
-            else{
+            if (nsst!=null){
+                log.info("Requesting instantation of NSSI with UUID "+internalRequest.getNssiId().toString());
+                osmPayload.setNssiId(internalRequest.getNssiId());
+                osmPayload.setNsdId(nsst.getNsdInfo().getNsdId());
+            } else {
                 throw new MalformattedElementException("Check OSM payload. must contain the nsdID and nsst id");
             }
             super.instantiateNetworkSubSlice(osmPayload);
-
         }
 
     }
