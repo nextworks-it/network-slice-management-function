@@ -166,6 +166,36 @@ public class NssmfRestClient implements NssmfLcmProvisioningInterface, NssmfLcmC
 
     @Override
     public void terminateNetworkSliceInstance(NssmfBaseProvisioningMessage request) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        log.debug("Received request to terminate a network subslice"+request.getNssiId());
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            log.debug(mapper.writeValueAsString(request));
+        } catch (JsonProcessingException e) {
+            log.warn("error deserializing request:",e);
+        }
+        HttpHeaders header = new HttpHeaders();
+        header.add("Content-Type", "application/json");
 
+        HttpEntity<?> postEntity = new HttpEntity<>(request, header);
+
+        String url = baseUrl + "/nss/"+request.getNssiId()+"/action/terminate";
+        try {
+            ResponseEntity<UUID> httpResponse =
+                    restTemplate.exchange(url, HttpMethod.PUT, postEntity, UUID.class);
+
+            log.debug("Response code: " + httpResponse.getStatusCode().toString());
+            HttpStatus code = httpResponse.getStatusCode();
+
+            if (code.equals(HttpStatus.ACCEPTED)) {
+                log.debug("Triggered network slice subnet termination");
+
+            } else {
+                throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
+            }
+
+        }catch (Exception e){
+            log.error("Generic error during NssmfRestClient interaction with NSSMF",e);
+            throw new FailedOperationException("Generic error during NssmfRestClient interaction with NSSMF");
+        }
     }
 }

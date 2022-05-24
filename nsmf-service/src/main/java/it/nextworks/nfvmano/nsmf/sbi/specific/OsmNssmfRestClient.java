@@ -46,4 +46,9 @@ public class OsmNssmfRestClient extends NssmfRestClient {
         }
 
     }
+
+    @Override
+    public void terminateNetworkSliceInstance(NssmfBaseProvisioningMessage request) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        super.terminateNetworkSliceInstance(request);
+    }
 }

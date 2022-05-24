@@ -11,6 +11,7 @@ import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsiLcmNotificationCon
 import it.nextworks.nfvmano.libs.vs.common.nsmf.interfaces.NsmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.nsmf.elements.ConfigurationRequestStatus;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.interfaces.NssmfLcmProvisioningInterface;
+import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.NssResourceAllocation;
 import it.nextworks.nfvmano.libs.vs.common.ra.interfaces.ResourceAllocationProvider;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeRequest;
@@ -27,6 +28,7 @@ import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceInstanceRecordStatu
 import it.nextworks.nfvmano.nsmf.record.elements.NetworkSliceSubnetRecordStatus;
 import it.nextworks.nfvmano.nsmf.record.repos.ConfigurationRequestRepo;
 import it.nextworks.nfvmano.nsmf.sbi.NssmfDriverRegistry;
+import it.nextworks.nfvmano.nsmf.sbi.NssmfRestClient;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalInstantiateNssiRequest;
 import it.nextworks.nfvmano.nsmf.sbi.messages.InternalModifyNssiRequest;
 import it.nextworks.nfvmano.nsmf.topology.InfrastructureTopologyService;
@@ -107,7 +109,7 @@ public class NsLcmManager {
                     processNotifyNssiStatusChange((EngineNotifyNssiStatusChange)em);
                     break;
                 case TERMINATE_NSI_REQUEST:
-                    processTerminateNsiRequest((InstantiateNsiRequestMessage)em);
+                    processTerminateNsiRequest((TerminateNsiRequestMessage) em);
                     break;
                 case UPDATE_NSI_REQUEST:
                     processUpdateNsiRequest((EngineUpdateNsiRequest)em);
@@ -264,7 +266,45 @@ public class NsLcmManager {
 
     }
 
-    private void processTerminateNsiRequest(InstantiateNsiRequestMessage em) {
+    private void processTerminateNsiRequest(TerminateNsiRequestMessage em) {
+        log.debug("Processing Terminate NSI request");
+        try{
+            NetworkSliceInstanceRecord nsiRecord=nsiRecordService.getNetworkSliceInstanceRecord(this.networkSliceInstanceId);
+            if(nsiRecord.getStatus().equals(NetworkSliceInstanceRecordStatus.INSTANTIATED)) {
+                for(UUID nssiId: nssiNsst.keySet()){
+                    NSST nsst=nssiNsst.get(nssiId);
+                    switch (nsst.getType()){
+                        case RAN:
+                            nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId, NetworkSliceInstanceRecordStatus.TERMINATING_RAN_SUBNET, "");
+                            break;
+                        case CORE:
+                            nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId, NetworkSliceInstanceRecordStatus.TERMINATING_CORE_SUBNET, "");
+                            break;
+                        case TRANSPORT:
+                            nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId, NetworkSliceInstanceRecordStatus.TERMINATING_TRANSPORT_SUBNET, "");
+                            break;
+                        case VAPP:
+                            nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId, NetworkSliceInstanceRecordStatus.TERMINATING_APP_SUBNET, "");
+                            break;
+                        default:
+                            log.error("Network Slice Subnet not permitted");
+                            break;
+                    }
+                    NssmfLcmProvisioningInterface driver=nssiDrivers.get(nssiId);
+                    driver.terminateNetworkSliceInstance(new NssmfBaseProvisioningMessage(nssiId));
+                }
+            }
+        }catch (NotExistingEntityException e){
+            failInstance(e.getMessage());
+        } catch (FailedOperationException e) {
+            failInstance(e.getMessage());
+        } catch (MethodNotImplementedException e) {
+            failInstance(e.getMessage());
+        } catch (MalformattedElementException e) {
+            failInstance(e.getMessage());
+        } catch (NotPermittedOperationException e) {
+            failInstance(e.getMessage());
+        }
     }
 
     private void processNotifyNssiStatusChange(EngineNotifyNssiStatusChange em) {
@@ -299,6 +339,15 @@ public class NsLcmManager {
                     log.debug("Updating configuration request action and NSI status");
                 } else {
                     log.warn("Could not found configuration request with specified id:" + configActionId + ". IGNORING");
+                }
+            } else if(record.getStatus()==NetworkSliceInstanceRecordStatus.TERMINATING_RAN_SUBNET
+                    || record.getStatus()==NetworkSliceInstanceRecordStatus.TERMINATING_CORE_SUBNET
+                    || record.getStatus()==NetworkSliceInstanceRecordStatus.TERMINATING_TRANSPORT_SUBNET
+                    || record.getStatus()==NetworkSliceInstanceRecordStatus.TERMINATING_APP_SUBNET){
+                nssiNsst.remove(em.getNssiId());
+                if(nssiNsst.isEmpty()) {
+                    nsiRecordService.updateNsInstanceStatus(networkSliceInstanceId, NetworkSliceInstanceRecordStatus.TERMINATED, "");
+                    vsmfNotifier.notifyVsmf(new VsmfNotificationMessage(networkSliceInstanceId, NsiNotifType.STATUS_CHANGED, NetworkSliceInstanceStatus.TERMINATED));
                 }
             } else {
                 log.warn("Received NOTIFY NSSI STATUS Change in wrong status: " + record.getStatus() + ". IGNORING");

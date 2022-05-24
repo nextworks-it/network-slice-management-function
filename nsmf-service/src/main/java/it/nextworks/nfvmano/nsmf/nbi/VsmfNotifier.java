@@ -6,14 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import it.nextworks.nfvmano.libs.vs.common.vsmf.interfaces.VsmfNotificationInterface;
 import it.nextworks.nfvmano.libs.vs.common.vsmf.message.VsmfNotificationMessage;
-//import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +17,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.Cookie;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
 
 @Service
 public class VsmfNotifier implements VsmfNotificationInterface {
@@ -160,42 +149,4 @@ class VsmfRestClient implements VsmfNotificationInterface{
             e.printStackTrace();
         }
     }
-
-    /*@Override
-    public void notifyVsmf(VsmfNotificationMessage vsmfNotificationMessage) {
-
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost(notifyUrl);
-
-        ObjectMapper mapper=new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-        try {
-            String vsInstantiationRequestJson = mapper.writeValueAsString(vsmfNotificationMessage);
-            StringEntity stringEntity = new StringEntity(vsInstantiationRequestJson);
-
-            httpPost.setEntity(stringEntity);
-
-            httpPost.setHeader("Accept", "application/json");
-            httpPost.setHeader("Content-type", "application/json");
-
-            HttpClientContext context = HttpClientContext.create();
-            CloseableHttpResponse response;
-
-                response = httpClient.execute(httpPost, context);
-
-
-            if(response.getStatusLine().getStatusCode() != 200) {
-                HttpEntity httpEntity = response.getEntity();
-                String msg = "Authentication failed: " + EntityUtils.toString(httpEntity, "UTF-8");
-                log.error(msg);
-            }
-        } catch(IOException e) {
-            e.printStackTrace();
-            String msg = "NSSO Unreachable.";
-            log.error(msg);
-            return;
-        }
-    }*/
 }

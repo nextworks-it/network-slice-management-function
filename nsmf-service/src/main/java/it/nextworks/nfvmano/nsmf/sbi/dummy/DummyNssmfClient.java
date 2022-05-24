@@ -60,44 +60,56 @@ public class DummyNssmfClient extends NssmfRestClient {
                 }
 
                 NsmfNotificationMessage notificationMessage=new NsmfNotificationMessage(request.getNssiId(), NssiNotifType.STATUS_CHANGED, NssiStatus.INSTANTIATED);
-                boolean auth=true; //authenticate("admin", "admin");
-                log.debug("Authenticated "+auth);
-                if(auth) {
-                    //if (this.authCookie != null) {
-                        HttpHeaders header = new HttpHeaders();
-                        header.add("Content-Type", "application/json");
-                        header.add("Cookie", this.authCookie);
-
-                        HttpEntity<?> postEntity = new HttpEntity<>(notificationMessage, header);
-
-                        String url = baseUrl + "/vs/basic/nslcm/nss/"+request.getNssiId().toString()+"/notify";
-
-                        log.debug("URL where notify {}", url);
-                        log.debug(postEntity.getBody().toString());
-                        try {
-                            log.debug("Sending HTTP message to notify network slice status change.");
-                            ResponseEntity<String> httpResponse =
-                                    restTemplate.exchange(url, HttpMethod.POST, postEntity, String.class);
-
-                            log.debug("Response code: " + httpResponse.getStatusCode().toString());
-                            HttpStatus code = httpResponse.getStatusCode();
-
-                            if (code.equals(HttpStatus.OK)) {
-                                log.debug("Notification correctly dispatched.");
-                            } else {
-                                log.debug("Error while sending notification");
-                            }
-                        } catch (RestClientException e) {
-                            log.debug("Error while sending notification");
-                            log.debug(e.toString());
-                            log.debug("RestClientException response: Message " + e.getMessage());
-                        }
-                    //} else log.debug("Authentication Required!");
-                }
+                notifyNsmf(notificationMessage, request.getNssiId().toString());
             } else
                 throw new FailedOperationException("Could not find allocation for NSST:" + internalRequest.getNsst().getNsstId());
         } else
             throw  new MethodNotImplementedException("Instantiate network sub slice method not implemented for generic message");
+    }
+
+    @Override
+    public void terminateNetworkSliceInstance(NssmfBaseProvisioningMessage request) throws NotExistingEntityException, MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException {
+        log.debug("Receive request to terminate NSSI with ID {}", request.getNssiId().toString());
+        log.debug("Deleted NSSI with ID {}", request.getNssiId().toString());
+        NsmfNotificationMessage notificationMessage=new NsmfNotificationMessage(request.getNssiId(), NssiNotifType.STATUS_CHANGED, NssiStatus.TERMINATED);
+        notifyNsmf(notificationMessage, request.getNssiId().toString());
+    }
+
+    private void notifyNsmf(NsmfNotificationMessage notificationMessage, String nssiId){
+        boolean auth=true; //authenticate("admin", "admin");
+        log.debug("Authenticated "+auth);
+        if(auth) {
+            //if (this.authCookie != null) {
+            HttpHeaders header = new HttpHeaders();
+            header.add("Content-Type", "application/json");
+            header.add("Cookie", this.authCookie);
+
+            HttpEntity<?> postEntity = new HttpEntity<>(notificationMessage, header);
+
+            String url = baseUrl + "/vs/basic/nslcm/nss/"+nssiId+"/notify";
+
+            log.debug("URL where notify {}", url);
+            log.debug(postEntity.getBody().toString());
+            try {
+                log.debug("Sending HTTP message to notify network slice status change.");
+                ResponseEntity<String> httpResponse =
+                        restTemplate.exchange(url, HttpMethod.POST, postEntity, String.class);
+
+                log.debug("Response code: " + httpResponse.getStatusCode().toString());
+                HttpStatus code = httpResponse.getStatusCode();
+
+                if (code.equals(HttpStatus.OK)) {
+                    log.debug("Notification correctly dispatched.");
+                } else {
+                    log.debug("Error while sending notification");
+                }
+            } catch (RestClientException e) {
+                log.debug("Error while sending notification");
+                log.debug(e.toString());
+                log.debug("RestClientException response: Message " + e.getMessage());
+            }
+            //} else log.debug("Authentication Required!");
+        }
     }
 
     boolean authenticate(String username, String password){
@@ -127,6 +139,5 @@ public class DummyNssmfClient extends NssmfRestClient {
             log.error("Error during authentication process with the NSMF " + e.toString());
             return false;
         }
-
     }
 }
