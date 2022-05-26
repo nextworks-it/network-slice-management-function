@@ -48,8 +48,8 @@ public class AuthRequestTranslator {
         readExternalProperties();
         authRequest.setRequestId(request.getRequestId());
 
-        setNodes(request.getTopology());
-        setLinks(request.getTopology());
+        //setNodes(request.getTopology());
+        //setLinks(request.getTopology());
         setVnfs(request.getNst());
         setSfcs(request.getNst());
         setE2EQoS(request.getNst());

@@ -34,7 +34,9 @@ public class FileResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
     public void computeResources(ResourceAllocationComputeRequest request) throws NotExistingEntityException, FailedOperationException, MalformattedElementException {
         log.debug("Received ResourceAllocationCompute request");
         try {
-            String resourceName = "DefaultResourceAllocation.json";
+            String nstId = request.getNst().getNstId();
+            String resourceName = nstId+".json";
+            //String resourceName = "DefaultResourceAllocation.json";
             Resource resourceSpec = new ClassPathResource(resourceName);
 
             InputStream resource = resourceSpec.getInputStream();

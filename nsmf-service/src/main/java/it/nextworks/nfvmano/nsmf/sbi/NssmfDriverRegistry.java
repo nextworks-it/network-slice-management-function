@@ -3,12 +3,12 @@ package it.nextworks.nfvmano.nsmf.sbi;
 import it.nextworks.nfvmano.libs.ifa.templates.nst.NSST;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.interfaces.NssmfLcmProvisioningInterface;
 import it.nextworks.nfvmano.libs.vs.common.ra.messages.compute.ResourceAllocationComputeResponse;
+import it.nextworks.nfvmano.nsmf.manager.NsLcmManager;
 import it.nextworks.nfvmano.nsmf.record.NsiRecordService;
 import it.nextworks.nfvmano.nsmf.sbi.dummy.DummyNssmfClient;
-import it.nextworks.nfvmano.nsmf.sbi.specific.AppNssmfRestClient;
-import it.nextworks.nfvmano.nsmf.sbi.specific.CoreNssmfRestClient;
-import it.nextworks.nfvmano.nsmf.sbi.specific.OsmNssmfRestClient;
-import it.nextworks.nfvmano.nsmf.sbi.specific.TransportNssmfRestClient;
+import it.nextworks.nfvmano.nsmf.sbi.specific.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,19 +41,23 @@ public class NssmfDriverRegistry {
     @Value("${nssmf.type:STANDARD}")
     private String nssmfType;
 
+    private static final Logger LOG = LoggerFactory.getLogger(NssmfDriverRegistry.class);
+
     @Autowired
     private NsiRecordService nsiRecordService;
     public NssmfLcmProvisioningInterface getNssmfLcmDriver(ResourceAllocationComputeResponse em, NSST targetNsst){
 
+        LOG.info("NSSMF Type is "+nssmfType+ " and target NSST type is "+targetNsst.getType());
         switch (nssmfType){
             case "STANDARD":
                 switch (targetNsst.getType()) {
                     case RAN:
-                        return null;
+                        return new OsmNssmfRestClient(ranPluginAddress);
                     case TRANSPORT:
                         return new TransportNssmfRestClient(transportPluginAddress, nsiRecordService);
                     case CORE:
-                        return new CoreNssmfRestClient(corePluginAddress);
+                        //return new CoreNssmfRestClient(corePluginAddress);
+                        return new CmcCoreNssmfRestClient(corePluginAddress);
                     case VAPP:
                         return new AppNssmfRestClient(vappPluginAddress);
                     default:
