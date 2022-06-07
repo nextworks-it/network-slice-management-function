@@ -3,6 +3,7 @@ package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth.elements;
 import it.nextworks.nfvmano.libs.vs.common.ra.elements.ExternalAlgorithmRequest;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,26 +12,34 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
     private List<Node> nodeList;
     private List<Link> linkList;
     private List<Vnf> vnfs;
-    private List<Sfc> sfcList;
+    private Sfc sfc;
     private E2EQoS e2eQoS;
     private Map<String, Float> pnfParameters;
     private List<Map<String, BigInteger>> port_power;
+
+    private int numUsersInSlice;
+
+    private Map<String, String> sliceParameters=new HashMap<>();
 
     public AuthExternalAlgorithmRequest(){}
 
     public AuthExternalAlgorithmRequest(String requestId,
                                         List<Node> nodes, List<Link> linkList,
-                                        List<Vnf> vnfs, List<Sfc> sfcList,
+                                        List<Vnf> vnfs, Sfc sfc,
                                         E2EQoS e2eQoS, Map<String, Float> pnfParameters,
-                                        List<Map<String, BigInteger>> port_power){
+                                        List<Map<String, BigInteger>> port_power,
+                                        int numUsersInSlice,
+                                        Map<String, String> sliceParameters){
         this.setRequestId(requestId);
         this.nodeList =nodes;
         this.linkList=linkList;
         this.vnfs=vnfs;
-        this.sfcList=sfcList;
+        this.sfc=sfc;
         this.e2eQoS=e2eQoS;
         this.pnfParameters=pnfParameters;
         this.port_power=port_power;
+        this.numUsersInSlice=numUsersInSlice;
+        this.sliceParameters=sliceParameters;
     }
 
     public List<Node> getNodeList() {
@@ -57,12 +66,12 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
         this.vnfs = vnfs;
     }
 
-    public List<Sfc> getSfcList() {
-        return sfcList;
+    public Sfc getSfc() {
+        return sfc;
     }
 
-    public void setSfcList(List<Sfc> sfcList) {
-        this.sfcList = sfcList;
+    public void setSfc(Sfc sfc) {
+        this.sfc = sfc;
     }
 
     public E2EQoS getE2eQoS() {
@@ -87,5 +96,25 @@ public class AuthExternalAlgorithmRequest extends ExternalAlgorithmRequest {
 
     public void setPort_power(List<Map<String, BigInteger>> port_power) {
         this.port_power = port_power;
+    }
+
+    public int getNumUsersInSlice() {
+        return numUsersInSlice;
+    }
+
+    public void setNumUsersInSlice(int numUsersInSlice) {
+        this.numUsersInSlice = numUsersInSlice;
+    }
+
+    public Map<String, String> getSliceParameters() {
+        return sliceParameters;
+    }
+
+    public void setSliceParameters(Map<String, String> sliceParameters) {
+        this.sliceParameters = sliceParameters;
+    }
+
+    public void addParameter(String key, String value){
+        this.sliceParameters.put(key, value);
     }
 }

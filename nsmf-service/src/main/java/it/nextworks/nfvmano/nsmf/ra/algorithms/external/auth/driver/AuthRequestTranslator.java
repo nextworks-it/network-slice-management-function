@@ -48,6 +48,7 @@ public class AuthRequestTranslator {
         readExternalProperties();
         authRequest.setRequestId(request.getRequestId());
 
+        authRequest.addParameter("nsiId", request.getNsiId());
         setNodes(request.getTopology());
         setLinks(request.getTopology());
         setVnfs(request.getNst());
@@ -137,22 +138,22 @@ public class AuthRequestTranslator {
     }
 
     public void setSfcs(NST nst){
-        List<Sfc> sfcs=new ArrayList<>();
         Nsd nsd=getVappNsd(nst);
+        authRequest.addParameter("nsdId", nsd.getId());
         Sfc sfc=new Sfc("sfc-"+nsd.getId(), nsd.getName(), nsd.getVnfdId());
-        sfcs.add(sfc);
-        authRequest.setSfcList(sfcs);
+        authRequest.setSfc(sfc);
     }
 
     public void setE2EQoS(NST nst){
         E2EQoS qos=new E2EQoS();
         NstServiceProfile serviceProfile=nst.getNstServiceProfileList().get(0);
-        qos.setSfcReq(authRequest.getSfcList().get(0).getSfcId());
+        qos.setSfcReq(authRequest.getSfc().getSfcId());
         qos.setLatency(serviceProfile.getLatency());
         qos.setSurvivalTime(serviceProfile.getSurvivalTime());
         int throughput=(serviceProfile.getdLThptPerSlice()+serviceProfile.getuLThptPerSlice())/2;
         qos.setThroughput(throughput);
         authRequest.setE2eQoS(qos);
+        authRequest.setNumUsersInSlice(serviceProfile.getMaxNumberofUEs());
     }
 
     public Nsd getVappNsd(NST nst){
