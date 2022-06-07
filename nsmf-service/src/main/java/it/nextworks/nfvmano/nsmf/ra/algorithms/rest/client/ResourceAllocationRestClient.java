@@ -21,7 +21,7 @@ public class ResourceAllocationRestClient extends BaseRestClient {
     public String computeResourceAllocation(ExternalAlgorithmRequest request){
         log.debug("Sending request to compute resource allocation to external algorithm");
         String url=externalAlgorithmBaseUrl+"/computeResourceAllocation";
-        ResponseEntity<String> httpResponse= performHTTPRequest(request, url, HttpMethod.PUT);
+        ResponseEntity<String> httpResponse= performHTTPRequest(request, url, HttpMethod.POST);
         return manageHTTPResponse(httpResponse, "Error while computing resource allocation", "Resource allocation computation started", HttpStatus.ACCEPTED);
     }
 }

@@ -118,6 +118,9 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
 
     @Autowired
     private VsmfNotifier vsmfNotifier;
+
+    @Value("${nsmf.vsmfnotifier.notifyVsmf:false}")
+    private boolean notifyVsmf;
     //internal map of VS LCM Managers
     //each VS LCM Manager is created when a new VSI ID is created and removed when the VSI ID is removed
     private Map<UUID, NsLcmManager> nsLcmManagers = new HashMap<>();
@@ -402,7 +405,7 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
     
     
     public void removeNsLcmManager(String nsiId) {
-    	this.nsLcmManagers.remove(nsiId);
+    	this.nsLcmManagers.remove(UUID.fromString(nsiId));
         log.debug("NS LCM removed from engine.");
     }
 
@@ -426,7 +429,8 @@ public class NsLcmService implements NsmfLcmProvisioningInterface, NsmfLcmConfig
                 driverRegistry,
                 configurationRequestRepo,
                 infrastructureTopologyService,
-                vsmfNotifier
+                vsmfNotifier,
+                notifyVsmf
                 );
         createQueue(nsiId, nsLcmManager);
         nsLcmManagers.put(nsiId, nsLcmManager);

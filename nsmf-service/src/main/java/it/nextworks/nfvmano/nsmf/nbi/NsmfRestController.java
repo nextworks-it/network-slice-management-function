@@ -271,7 +271,7 @@ public class NsmfRestController {
 	public ResponseEntity<?> configureNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
 		log.debug("Received request to configure network slice " + nsiId);
 		try {
-			if(!nsiId.equals(request.getNsiId()))
+			if(!nsiId.equals(request.getNsiId().toString()))
 				throw new MalformattedElementException("NSI ID within path variable differs from request body ones");
 
 			//String tenantId = getUserFromAuth(auth);

@@ -19,21 +19,13 @@ public class OsmNssmfRestClient extends NssmfRestClient {
         super(url);
     }
 
-    private NSST getNsst(NST nst, String nsstId){
-        for(NSST nsst: nst.getNsst().getNsstList()){
-            if(nsst.getNsstId().equals(nsstId)){
-                return nsst;
-            }
-        }
-        return null;
-    }
-
     @Override
     public void instantiateNetworkSubSlice(NssmfBaseProvisioningMessage request) throws MethodNotImplementedException, FailedOperationException, MalformattedElementException, NotPermittedOperationException, AlreadyExistingEntityException, NotExistingEntityException {
         if (request instanceof InternalInstantiateNssiRequest) {
             InternalInstantiateNssiRequest internalRequest = (InternalInstantiateNssiRequest) request;
             ResourceAllocationComputeResponse raResponse = internalRequest.getResourceAllocationComputeResponse();
-            NSST nsst = getNsst(internalRequest.getParentNst(), raResponse.getNsResourceAllocation().getNssResourceAllocations().get(0).getNsstId());
+
+            NSST nsst = internalRequest.getNsst();
             OsmPayload osmPayload = new OsmPayload();
             if (nsst!=null){
                 log.info("Requesting instantation of NSSI with UUID "+internalRequest.getNssiId().toString());

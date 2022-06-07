@@ -13,10 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -54,9 +51,10 @@ public class StaticAlgorithmResponseManager {
             staticResponses=raResponseRepository.findAll();
         } else if((fParams.size()==1)&& fParams.containsKey("RESPONSE_ID")){
             String responseId= fParams.get("RESPONSE_ID");
-            if(!raResponseRepository.findByResponseId(UUID.fromString(responseId)).isPresent())
+            Optional<StaticRaResponseRecord> record=raResponseRepository.findByResponseId(UUID.fromString(responseId));
+            if(!record.isPresent())
                 throw new NotExistingEntityException("StaticNsiRaResponse with ID "+responseId+" not found");
-            staticResponses.add(raResponseRepository.findByResponseId(UUID.fromString(responseId)).get());
+            staticResponses.add(record.get());
         } else {
             log.error("Query filter not supported");
             throw new MalformattedElementException("Query filter not supported");
@@ -67,10 +65,11 @@ public class StaticAlgorithmResponseManager {
     public void deleteStaticNsiResponse(String responseId)throws NotExistingEntityException{
         log.debug("Receive request to delete StaticNsiRaResponse with ID "+responseId);
 
-        if(!raResponseRepository.findByResponseId(UUID.fromString(responseId)).isPresent())
-            throw new NotExistingEntityException("Policy with ID "+responseId+" not found");
+        Optional<StaticRaResponseRecord> record=raResponseRepository.findByResponseId(UUID.fromString(responseId));
+        if(!record.isPresent())
+            throw new NotExistingEntityException("StaticNsiRaResponse with ID "+responseId+" not found");
 
-        StaticRaResponseRecord response=raResponseRepository.findByResponseId(UUID.fromString(responseId)).get();
+        StaticRaResponseRecord response=record.get();
 
         raResponseRepository.delete(response);
 
