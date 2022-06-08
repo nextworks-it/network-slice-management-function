@@ -58,7 +58,7 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
     @Value("${ra.external.algorithm}")
     private String externalRaAlgorithm;
 
-    @Value("${resource_allocation.default_file.path:null}")
+    @Value("${resource_allocation.default_file.path:DefaultResourceAllocation.json}")
     private String defaultRaFilePath;
 
     /**

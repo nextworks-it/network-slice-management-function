@@ -41,12 +41,14 @@ public class FileResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
             ObjectMapper mapper = new ObjectMapper();
             ResourceAllocationComputeResponse defaultResponse;
 
-            if(defaultRaFilePath==null) {
-                String resourcePath = "DefaultResourceAllocation.json";
+            if(!defaultRaFilePath.startsWith("/")) {
+                String resourcePath = defaultRaFilePath;
                 Resource resourceSpec = new ClassPathResource(resourcePath);
                 InputStream resource = resourceSpec.getInputStream();
                 defaultResponse= mapper.readValue(resource, ResourceAllocationComputeResponse.class);
             } else {
+
+                //TODO: ADD CONTROL
                 log.debug("Find a valid path");
                 defaultResponse=mapper.readValue(new File(defaultRaFilePath), ResourceAllocationComputeResponse.class);
             }
