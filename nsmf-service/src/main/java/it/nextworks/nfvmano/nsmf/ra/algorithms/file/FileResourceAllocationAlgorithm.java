@@ -20,28 +20,37 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.UUID;
 
 public class FileResourceAllocationAlgorithm extends BaseResourceAllocationAlgorithm {
     private static final RAAlgorithmType type =RAAlgorithmType.FILE ;
 
+    private String defaultRaFilePath;
+
     private static final Logger log = LoggerFactory.getLogger(FileResourceAllocationAlgorithm.class);
-    public FileResourceAllocationAlgorithm(ResourceAllocationComputeService resourceAllocationComputeService) {
+    public FileResourceAllocationAlgorithm(ResourceAllocationComputeService resourceAllocationComputeService, String defaultRaFilePath) {
         super(resourceAllocationComputeService, type);
+        this.defaultRaFilePath=defaultRaFilePath;
     }
 
     @Override
     public void computeResources(ResourceAllocationComputeRequest request) throws NotExistingEntityException, FailedOperationException, MalformattedElementException {
         log.debug("Received ResourceAllocationCompute request");
         try {
-            String resourceName = "DefaultResourceAllocation.json";
-            Resource resourceSpec = new ClassPathResource(resourceName);
-
-            InputStream resource = resourceSpec.getInputStream();
-
-
             ObjectMapper mapper = new ObjectMapper();
-            ResourceAllocationComputeResponse defaultResponse = mapper.readValue(resource, ResourceAllocationComputeResponse.class);
+            ResourceAllocationComputeResponse defaultResponse;
+
+            if(defaultRaFilePath==null) {
+                String resourcePath = "DefaultResourceAllocation.json";
+                Resource resourceSpec = new ClassPathResource(resourcePath);
+                InputStream resource = resourceSpec.getInputStream();
+                defaultResponse= mapper.readValue(resource, ResourceAllocationComputeResponse.class);
+            } else {
+                log.debug("Find a valid path");
+                defaultResponse=mapper.readValue(new File(defaultRaFilePath), ResourceAllocationComputeResponse.class);
+            }
+
             NsResourceAllocation nsResourceAllocation = new NsResourceAllocation(UUID.randomUUID().toString(),request.getNsiId(), defaultResponse.getNsResourceAllocation().getNssResourceAllocations() );
             ResourceAllocationComputeResponse response = new ResourceAllocationComputeResponse(request.getRequestId(), nsResourceAllocation, true);
 

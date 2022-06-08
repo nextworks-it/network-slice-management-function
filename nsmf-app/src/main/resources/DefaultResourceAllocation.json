@@ -5,7 +5,7 @@
     "nsiId": "34e3ee16-2b50-4227-95da-c244b51b9d11",
     "nssResourceAllocations": [
       {
-        "nsstId": "nsst-core",
+        "nsstId": "nsst-vapp",
         "allocationType": "COMPUTE",
         "vnfPlacement": {
           "5d14868f-4603-4fd9-a540-ec9939d340e3": "node-1"

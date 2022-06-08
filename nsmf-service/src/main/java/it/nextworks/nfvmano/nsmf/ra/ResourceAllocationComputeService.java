@@ -58,6 +58,9 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
     @Value("${ra.external.algorithm}")
     private String externalRaAlgorithm;
 
+    @Value("${resource_allocation.default_file.path:null}")
+    private String defaultRaFilePath;
+
     /**
      * Instantiate a specialized event handler defined by the specializedEventHandlerClass
      * @return A generic NssLcmEventHandler object
@@ -103,7 +106,7 @@ public class ResourceAllocationComputeService implements ResourceAllocationProvi
                     algorithm = new StaticAlgorithmNXW(this, staticRaResponseRepository);
                     break;
                 case FILE:
-                    algorithm= new FileResourceAllocationAlgorithm(this);
+                    algorithm= new FileResourceAllocationAlgorithm(this, defaultRaFilePath);
                     break;
                 case EXTERNAL:
                     algorithm= this.instantiateRAExternalAlgorithm();
