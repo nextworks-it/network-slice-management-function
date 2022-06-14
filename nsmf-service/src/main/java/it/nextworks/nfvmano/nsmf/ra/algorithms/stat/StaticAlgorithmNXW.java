@@ -29,9 +29,9 @@ public class StaticAlgorithmNXW extends BaseResourceAllocationAlgorithm {
     public void computeResources(ResourceAllocationComputeRequest request) throws FailedOperationException {
         log.debug("Retrieving static response");
 
-       StaticRaResponseRecord sResponse = repository.findAll().get(0);
+        StaticRaResponseRecord sResponse = repository.findAll().get(0);
 
-        ResourceAllocationComputeResponse response=new ResourceAllocationComputeResponse(new NsResourceAllocation(null, request.getNsiId(), null), true);
+        ResourceAllocationComputeResponse response=new ResourceAllocationComputeResponse(request.getRequestId(), new NsResourceAllocation(null, request.getNsiId(), null), true);
 
         Thread thread = new Thread(new Runnable() {
             @Override

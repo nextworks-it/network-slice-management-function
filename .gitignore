@@ -1,5 +1,6 @@
 *.class
 target
 .idea
+*.iml
 data
 test

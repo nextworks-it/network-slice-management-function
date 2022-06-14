@@ -76,6 +76,12 @@ public enum NetworkSliceInstanceRecordStatus {
             return NetworkSliceInstanceStatus.TERMINATING;
         }
     },
+    TERMINATING_RAN_SUBNET{
+        @Override
+        public NetworkSliceInstanceStatus asNsiStatus() {
+            return NetworkSliceInstanceStatus.TERMINATING;
+        }
+    },
     TERMINATING_APP_SUBNET{
         @Override
         public NetworkSliceInstanceStatus asNsiStatus() {
