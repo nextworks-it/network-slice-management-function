@@ -5,11 +5,20 @@
     "nsiId": "34e3ee16-2b50-4227-95da-c244b51b9d11",
     "nssResourceAllocations": [
       {
-        "nsstId": "nsst-vapp",
-        "allocationType": "COMPUTE",
-        "vnfPlacement": {
-          "5d14868f-4603-4fd9-a540-ec9939d340e3": "node-1"
-        }
+        "nsstId": "nsst-transport",
+        "allocationType": "SDN",
+        "csResources": [
+          {
+            "ingressSipId": "a4f6045d-8678-56c8-9765-c6e9ea958aea",
+            "egressSipId": "9fc8d0d5-c0f9-5da8-9282-d3de6283997d",
+            "capacity": 1
+          },
+          {
+            "ingressSipId": "882173f6-f7e1-5e8f-b320-f668f83257f0",
+            "egressSipId": "ff6fefd6-25c3-556a-8337-edda612bfbd6",
+            "capacity": 1
+          }
+        ]
       }
     ]
   }
