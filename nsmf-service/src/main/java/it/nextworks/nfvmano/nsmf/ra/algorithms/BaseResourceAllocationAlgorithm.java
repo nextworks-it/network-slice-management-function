@@ -14,6 +14,8 @@ public abstract class BaseResourceAllocationAlgorithm implements ResourceAllocat
 
     private RAAlgorithmType type;
 
+    public BaseResourceAllocationAlgorithm(){}
+
     public BaseResourceAllocationAlgorithm(ResourceAllocationComputeService resourceAllocationComputeService, RAAlgorithmType type){
 
         this.resourceAllocationComputeService=resourceAllocationComputeService;
@@ -25,6 +27,19 @@ public abstract class BaseResourceAllocationAlgorithm implements ResourceAllocat
         resourceAllocationComputeService.processResourceAllocationResponse(response);
     }
 
+    public ResourceAllocationComputeService getResourceAllocationComputeService() {
+        return resourceAllocationComputeService;
+    }
 
+    public void setResourceAllocationComputeService(ResourceAllocationComputeService resourceAllocationComputeService) {
+        this.resourceAllocationComputeService = resourceAllocationComputeService;
+    }
 
+    public RAAlgorithmType getType() {
+        return type;
+    }
+
+    public void setType(RAAlgorithmType type) {
+        this.type = type;
+    }
 }

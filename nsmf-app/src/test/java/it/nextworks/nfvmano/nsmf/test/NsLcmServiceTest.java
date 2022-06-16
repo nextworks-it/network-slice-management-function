@@ -37,7 +37,7 @@ public class NsLcmServiceTest {
 
         try {
             onboardNST();
-            nsLcmService.createNetworkSliceIdentifier(new CreateNsiIdRequest(
+            nsLcmService.createNetworkSliceIdentifierFromNst(new CreateNsiIdRequest(
                             "5gcroco_acca_e2e",
                             "testNsName",
                             "testNsDescription",
@@ -79,7 +79,7 @@ public class NsLcmServiceTest {
             MethodNotImplementedException, NotExistingEntityException, MalformattedElementException, NotPermittedOperationException {
         try {
             onboardNST();
-            UUID nsiId = nsLcmService.createNetworkSliceIdentifier(new CreateNsiIdRequest(
+            UUID nsiId = nsLcmService.createNetworkSliceIdentifierFromNst(new CreateNsiIdRequest(
                             "nst_test_e2e",
                             "testNsName",
                             "testNsDescription",

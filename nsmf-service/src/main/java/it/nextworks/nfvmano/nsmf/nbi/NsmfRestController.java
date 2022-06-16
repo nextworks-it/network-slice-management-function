@@ -19,11 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import it.nextworks.nfvmano.libs.vs.common.query.elements.Filter;
@@ -46,26 +44,46 @@ public class NsmfRestController {
 	
 	@Value("${sebastian.admin}")
 	private String adminTenant;
-
-
 	
-	private static String getUserFromAuth(Authentication auth) {
+	/*private static String getUserFromAuth(Authentication auth) {
 		Object principal = auth.getPrincipal();
 		if (!UserDetails.class.isAssignableFrom(principal.getClass())) {
 			throw new IllegalArgumentException("Auth.getPrincipal() does not implement UserDetails");
 		}
 		return ((UserDetails) principal).getUsername();
-	}
+	}*/
 	
 	public NsmfRestController() { }
 	
-	@RequestMapping(value = "/ns", method = RequestMethod.POST)
-	public ResponseEntity<?> createNsId(@RequestBody CreateNsiIdRequest request, Authentication auth) {
+	@RequestMapping(value = "/ns/nst", method = RequestMethod.POST)
+	public ResponseEntity<?> createNsIdFromNst(@RequestBody CreateNsiIdRequest request, Authentication auth) {
 		log.debug("Received request to create a new network slice instance ID.");
 		try {
-			String tenantId = getUserFromAuth(auth);
-			UUID nsiId = nsLcmService.createNetworkSliceIdentifier(request, tenantId);
+			//String tenantId =  getUserFromAuth(auth);
+			UUID nsiId = nsLcmService.createNetworkSliceIdentifierFromNst(request, adminTenant);
 			return new ResponseEntity<>(nsiId, HttpStatus.CREATED);	
+		} catch (NotExistingEntityException e) {
+			log.error("NS ID creation failed due to missing elements in DB.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+		} catch (MalformattedElementException e) {
+			log.error("NS ID creation failed due to bad-formatted request.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+		} catch (NotPermittedOperationException e) {
+			log.error("NS ID creation failed due to missing permission.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+		} catch (Exception e) {
+			log.error("NS ID creation failed due to internal errors.");
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/ns/nest", method = RequestMethod.POST)
+	public ResponseEntity<?> createNsIdFromNest(@RequestBody CreateNsiIdFromNestRequest request, Authentication auth){
+		log.debug("Received request to create a new network slice instance ID from NEST.");
+		try {
+			//String tenantId = getUserFromAuth(auth);
+			UUID nsiId = nsLcmService.createNetworkSliceIdentifierFromNest(request, adminTenant);
+			return new ResponseEntity<>(nsiId, HttpStatus.CREATED);
 		} catch (NotExistingEntityException e) {
 			log.error("NS ID creation failed due to missing elements in DB.");
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -95,12 +113,12 @@ public class NsmfRestController {
 	public ResponseEntity<?> getNsInstance(@PathVariable String nsiId, Authentication auth) {
 		log.debug("Received query for network slice instance with ID " + nsiId);
 		try {
-			String tenantId = getUserFromAuth(auth);
+			//String tenantId = getUserFromAuth(auth);
 			Map<String, String> parameters = new HashMap<String, String>();
 			parameters.put("NSI_ID", nsiId);
 			Filter filter = new Filter(parameters);
 			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
-			List<NetworkSliceInstance> nsis = nsLcmService.queryNetworkSliceInstance(query,  tenantId);
+			List<NetworkSliceInstance> nsis = nsLcmService.queryNetworkSliceInstance(query,  adminTenant);
 			if (nsis.isEmpty()) {
 				log.error("Network slice instance with ID " + nsiId + " not found");
 				return new ResponseEntity<>("Network slice instance with ID " + nsiId + " not found", HttpStatus.BAD_REQUEST);
@@ -128,11 +146,11 @@ public class NsmfRestController {
 	public ResponseEntity<?> getNsInstance(Authentication auth) {
 		log.debug("Received query for all network slice instances.");
 		try {
-			String tenantId = getUserFromAuth(auth);
+			//String tenantId = getUserFromAuth(auth);
 			Map<String, String> parameters = new HashMap<String, String>();
 			Filter filter = new Filter(parameters);
 			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
-			List<NetworkSliceInstance> nsis = nsLcmService.queryNetworkSliceInstance(query,  tenantId);
+			List<NetworkSliceInstance> nsis = nsLcmService.queryNetworkSliceInstance(query,  adminTenant);
 			return new ResponseEntity<List<NetworkSliceInstance>>(nsis, HttpStatus.OK);	
 		} catch (MalformattedElementException e) {
 			log.error("NS ID creation failed due to bad-formatted request.");
@@ -157,11 +175,11 @@ public class NsmfRestController {
 	public ResponseEntity<?> getNssInstance(Authentication auth) {
 		log.debug("Received query for all network slice subnet instances.");
 		try {
-			String tenantId = getUserFromAuth(auth);
+			//String tenantId = getUserFromAuth(auth);
 			Map<String, String> parameters = new HashMap<String, String>();
 			Filter filter = new Filter(parameters);
 			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
-			List<NetworkSliceSubnetInstance> nsis = nsLcmService.queryNetworkSliceSubnetInstance(query,  tenantId);
+			List<NetworkSliceSubnetInstance> nsis = nsLcmService.queryNetworkSliceSubnetInstance(query,  adminTenant);
 			return new ResponseEntity<List<NetworkSliceSubnetInstance>>(nsis, HttpStatus.OK);
 		} catch (MalformattedElementException e) {
 
@@ -185,11 +203,11 @@ public class NsmfRestController {
 	public ResponseEntity<?> getNsInstanceIds(Authentication auth) {
 		log.debug("Received query for all network slice instances.");
 		try {
-			String tenantId = getUserFromAuth(auth);
+			//String tenantId = getUserFromAuth(auth);
 			Map<String, String> parameters = new HashMap<String, String>();
 			Filter filter = new Filter(parameters);
 			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
-			List<String> nsis = nsLcmService.queryNetworkSliceInstance(query, tenantId).stream()
+			List<String> nsis = nsLcmService.queryNetworkSliceInstance(query, adminTenant).stream()
 					.map(nsInstance -> nsInstance.getNetworkSliceInstanceId().toString())
 					.collect(Collectors.toList());
 
@@ -209,7 +227,7 @@ public class NsmfRestController {
 	public ResponseEntity<?> geOperations(Authentication auth) {
 		log.debug("Received query for all operations.");
 		try {
-			String tenantId = getUserFromAuth(auth);
+			//String tenantId = getUserFromAuth(auth);
 			Map<String, String> parameters = new HashMap<String, String>();
 			Filter filter = new Filter(parameters);
 			GeneralizedQueryRequest query = new GeneralizedQueryRequest(filter, null);
@@ -227,8 +245,11 @@ public class NsmfRestController {
 	public ResponseEntity<?> instantiateNsi(@PathVariable String nsiId, @RequestBody InstantiateNsiRequest request, Authentication auth) {
 		log.debug("Received request to instantiate network slice " + nsiId);
 		try {
-			String tenantId = getUserFromAuth(auth);
-			nsLcmService.instantiateNetworkSlice(request, tenantId);
+			if(!nsiId.equals(request.getNsiId().toString()))
+				throw new MalformattedElementException("NSI ID within path variable differs from request body ones");
+
+			//String tenantId = getUserFromAuth(auth);
+			nsLcmService.instantiateNetworkSlice(request, adminTenant);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);	
 		} catch (NotExistingEntityException e) {
 			log.error("NS instantiation failed due to missing elements in DB.");
@@ -250,8 +271,11 @@ public class NsmfRestController {
 	public ResponseEntity<?> configureNsi(@PathVariable String nsiId, @RequestBody UpdateConfigurationRequest request, Authentication auth) {
 		log.debug("Received request to configure network slice " + nsiId);
 		try {
-			String tenantId = getUserFromAuth(auth);
-			UUID operationId= nsLcmService.configureNetworkSlice(request, tenantId);
+			if(!nsiId.equals(request.getNsiId().toString()))
+				throw new MalformattedElementException("NSI ID within path variable differs from request body ones");
+
+			//String tenantId = getUserFromAuth(auth);
+			UUID operationId= nsLcmService.configureNetworkSlice(request, adminTenant);
 			return new ResponseEntity<>(operationId.toString(), HttpStatus.ACCEPTED);
 		} catch (NotExistingEntityException e) {
 			log.error("NS configuration failed due to missing elements in DB.");
@@ -274,8 +298,10 @@ public class NsmfRestController {
 	public ResponseEntity<?> terminateNsi(@PathVariable String nsiId, @RequestBody TerminateNsiRequest request, Authentication auth) {
 		log.debug("Received request to terminate network slice " + nsiId);
 		try {
-			String tenantId = getUserFromAuth(auth);
-			nsLcmService.terminateNetworkSliceInstance(request, tenantId);
+			if(!nsiId.equals(request.getNsiId().toString()))
+				throw new MalformattedElementException("NSI ID within path differs from request body ones");
+			//String tenantId = getUserFromAuth(auth);
+			nsLcmService.terminateNetworkSliceInstance(request, adminTenant);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);	
 		} catch (NotExistingEntityException e) {
 			log.error("NS termination failed due to missing elements in DB.");
@@ -293,11 +319,13 @@ public class NsmfRestController {
 	}
 
 
-	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.PUT)
+	@RequestMapping(value = "/nss/{nssiId}/notify", method = RequestMethod.POST)
 	public ResponseEntity<?> notifyNssiStatusChange(@PathVariable String nssiId, @RequestBody NsmfNotificationMessage request, Authentication auth) {
 
-		log.debug("Received request to instantiate network slice " + nssiId);
+		log.debug("Received request to update status of network sub slice " + nssiId);
 		try {
+			if (!nssiId.equals(request.getNssiId().toString()))
+				throw new MalformattedElementException("NSSI ID within path differs from request body ones");
 
 			nsLcmService.notifyNssStatusChange(request);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
