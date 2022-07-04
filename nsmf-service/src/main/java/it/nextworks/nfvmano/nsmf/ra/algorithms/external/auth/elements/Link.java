@@ -8,7 +8,7 @@ public class Link {
     private Node source;
     private Node destination;
 
-    private int bandwidth; // in Kb/sec; current bw only.
+    private float bandwidth; // in Kb/sec; current bw only.
 
     private LinkType linkType;
 
@@ -49,11 +49,11 @@ public class Link {
         this.destination = destination;
     }
 
-    public int getBandwidth() {
+    public float getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(int bandwidth) {
+    public void setBandwidth(float bandwidth) {
         this.bandwidth = bandwidth;
     }
 

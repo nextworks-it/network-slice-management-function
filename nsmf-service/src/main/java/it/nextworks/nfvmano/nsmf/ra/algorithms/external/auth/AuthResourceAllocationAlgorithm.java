@@ -1,5 +1,7 @@
 package it.nextworks.nfvmano.nsmf.ra.algorithms.external.auth;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.FailedOperationException;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.MalformattedElementException;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.NotExistingEntityException;
@@ -19,6 +21,9 @@ public class AuthResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
     private static final RAAlgorithmType type =RAAlgorithmType.EXTERNAL;
     private static final Logger log = LoggerFactory.getLogger(AuthResourceAllocationAlgorithm.class);
     private String baseUrl;
+
+    private String externalPropertiesPath;
+
     private AuthRequestTranslator translator;
     private ResourceAllocationRestClient restClient;
     private Environment env;
@@ -29,7 +34,8 @@ public class AuthResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
         super(resourceAllocationComputeService, type);
         this.env=env;
         this.baseUrl= env.getProperty("base.url.auth");
-        this.translator=new AuthRequestTranslator(nfvoCatalogueClient);
+        this.externalPropertiesPath=env.getProperty("ra.external.properties");
+        this.translator=new AuthRequestTranslator(nfvoCatalogueClient, externalPropertiesPath);
         this.restClient=new ResourceAllocationRestClient(baseUrl);
     }
 
@@ -45,7 +51,8 @@ public class AuthResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
         setType(type);
         this.env=env;
         this.baseUrl= env.getProperty("base.url.auth");
-        this.translator=new AuthRequestTranslator(nfvoCatalogueClient);
+        this.externalPropertiesPath=env.getProperty("ra.external.properties");
+        this.translator=new AuthRequestTranslator(nfvoCatalogueClient, externalPropertiesPath);
         this.restClient=new ResourceAllocationRestClient(baseUrl);
     }
 
@@ -53,8 +60,15 @@ public class AuthResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
     public void computeResources(ResourceAllocationComputeRequest resourceAllocationComputeRequest) throws NotExistingEntityException, FailedOperationException, MalformattedElementException {
         log.debug("Received request to compute new resource allocation with AUTH external algorithm");
 
+        ObjectMapper objectMapper=new ObjectMapper();
+
         AuthExternalAlgorithmRequest authRequest=translator.translateRAComputeRequest(resourceAllocationComputeRequest);
 
+        try {
+            log.debug(objectMapper.writeValueAsString(authRequest));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         String responseCode=restClient.computeResourceAllocation(authRequest);
     }
 }
