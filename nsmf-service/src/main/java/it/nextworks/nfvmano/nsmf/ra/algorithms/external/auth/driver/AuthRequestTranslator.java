@@ -28,15 +28,20 @@ public class AuthRequestTranslator {
     private ExternalProperties externalProperties;
     private NfvoCatalogueClient nfvoCatalogueClient;
 
-    public AuthRequestTranslator(NfvoCatalogueClient nfvoCatalogueClient){
+    private String externalPropertiesPath;
+
+    private List<Vnfd> vnfds=new ArrayList<>();
+
+    public AuthRequestTranslator(NfvoCatalogueClient nfvoCatalogueClient, String externalPropertiesPath){
         this.authRequest=new AuthExternalAlgorithmRequest();
         this.mapper=new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
         this.nfvoCatalogueClient=nfvoCatalogueClient;
+        this.externalPropertiesPath=externalPropertiesPath;
     }
 
     public void readExternalProperties(){
         try {
-            this.externalProperties = mapper.readValue(new File("/home/nicola/network-slice-management-function/nsmf-service/src/main/resources/externalProperties.json"), ExternalProperties.class);
+            this.externalProperties = mapper.readValue(new File(externalPropertiesPath), ExternalProperties.class);
         } catch (IOException e){
             e.printStackTrace();
             log.error("Error during external properties deserialization");
@@ -51,8 +56,8 @@ public class AuthRequestTranslator {
         authRequest.addParameter("nsiId", request.getNsiId());
         setNodes(request.getTopology());
         setLinks(request.getTopology());
-        setVnfs(request.getNst());
         setSfcs(request.getNst());
+        setVnfs(request.getNst());
         setE2EQoS(request.getNst());
         authRequest.setPnfParameters(externalProperties.getPnfParameters());
         authRequest.setPort_power(externalProperties.getPort_power());
@@ -123,15 +128,13 @@ public class AuthRequestTranslator {
 
     public void setVnfs(NST nst){
         List<Vnf> vnfs=new ArrayList<>();
-        Nsd nsd=getVappNsd(nst);
-        List<String> vnfdIds=nsd.getVnfdId();
-        for(String vnfdId: vnfdIds) {
-            Vnfd vnfd=nfvoCatalogueClient.getVnfdById(vnfdId);
+        for(Vnfd vnfd: vnfds) {
             Vnf vnf = new Vnf();
-            vnf.setVnfdId(vnfdId);
+            vnf.setVnfdId(vnfd.getProductName());
             vnf.setType(vnfd.getProductInfoDescription());
             vnf.setCpuResources(Integer.valueOf(vnfd.getVirtualComputeDesc().get(0).getVirtualCpu().getNumVirtualCpu()));
             //Here it has to be added the maximum throughput available
+            vnf.setMaximumThroughput((int) nst.getNstServiceProfileList().get(0).getMaxThpt());
             vnfs.add(vnf);
         }
         authRequest.setVnfs(vnfs);
@@ -140,7 +143,16 @@ public class AuthRequestTranslator {
     public void setSfcs(NST nst){
         Nsd nsd=getVappNsd(nst);
         authRequest.addParameter("nsdId", nsd.getId());
-        Sfc sfc=new Sfc("sfc-"+nsd.getId(), nsd.getName(), nsd.getVnfdId());
+        Sfc sfc=new Sfc();
+        sfc.setSfcId("sfc-"+nsd.getId());
+        sfc.setType(nsd.getName());
+        List<String> vnfdIds=new ArrayList<>();
+        for(String vnfdId: nsd.getVnfdId()){
+            Vnfd vnfd=nfvoCatalogueClient.getVnfdById(vnfdId);
+            vnfdIds.add(vnfd.getProductName());
+            vnfds.add(vnfd);
+        }
+        sfc.setVnfSequence(vnfdIds);
         authRequest.setSfc(sfc);
     }
 
