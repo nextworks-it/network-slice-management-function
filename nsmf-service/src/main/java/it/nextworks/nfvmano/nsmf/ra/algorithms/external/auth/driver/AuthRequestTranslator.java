@@ -141,11 +141,12 @@ public class AuthRequestTranslator {
     }
 
     public void setSfcs(NST nst){
-        Nsd nsd=getVappNsd(nst);
+        Nsd nsd=getNsdByType(nst, SliceSubnetType.VAPP);
         authRequest.addParameter("nsdId", nsd.getId());
         Sfc sfc=new Sfc();
         sfc.setSfcId("sfc-"+nsd.getId());
         sfc.setType(nsd.getName());
+        sfc.setNsstId(getNsstIdByType(nst, SliceSubnetType.VAPP));
         List<String> vnfdIds=new ArrayList<>();
         for(String vnfdId: nsd.getVnfdId()){
             Vnfd vnfd=nfvoCatalogueClient.getVnfdById(vnfdId);
@@ -168,15 +169,28 @@ public class AuthRequestTranslator {
         authRequest.setNumUsersInSlice(serviceProfile.getMaxNumberofUEs());
     }
 
-    public Nsd getVappNsd(NST nst){
+    private Nsd getNsdByType(NST nst, SliceSubnetType subnetType){
         List<NSST> nssts=nst.getNsst().getNsstList();
         String nsdId="";
         for(NSST nsst: nssts)
-            if(nsst.getType().equals(SliceSubnetType.VAPP)){
+            if(nsst.getType().equals(subnetType)){
                 nsdId=nsst.getNsdInfo().getNsdId();
                 break;
             }
 
         return nfvoCatalogueClient.getNsdById(nsdId);
+    }
+
+    private String getNsstIdByType(NST nst, SliceSubnetType subnetType){
+        List<NSST> nssts=nst.getNsst().getNsstList();
+        String nsstId="";
+        for(NSST nsst: nssts){
+            if (nsst.getType().equals(subnetType)){
+                nsstId=nsst.getNsstId();
+                break;
+            }
+        }
+
+        return nsstId;
     }
 }

@@ -6,6 +6,8 @@ public class Sfc {
 
      private String sfcId;
      private String type;
+
+     private String nsstId;
      private List<String> vnfSequence;
 
      public Sfc(){}
@@ -30,6 +32,14 @@ public class Sfc {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getNsstId() {
+        return nsstId;
+    }
+
+    public void setNsstId(String nsstId) {
+        this.nsstId = nsstId;
     }
 
     public List<String> getVnfSequence() {

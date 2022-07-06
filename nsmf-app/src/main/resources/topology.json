@@ -102,7 +102,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 2038.79,
+      "bandwidth": 2038.79,
       "linkType": "WIRELESS",
       "delay": 0.006279364999999999
     },
@@ -134,7 +134,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 10000.0,
+      "bandwidth": 10000.0,
       "linkType": "WIRED",
       "delay": 0.009712587
     },
@@ -166,7 +166,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 10000.0,
+      "bandwidth": 10000.0,
       "linkType": "WIRED",
       "delay": 0.006986244
     },
@@ -201,7 +201,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 2081.53,
+      "bandwidth": 2081.53,
       "linkType": "WIRELESS",
       "delay": 0.006138424
     },
@@ -233,7 +233,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 10000.00,
+      "bandwidth": 10000.00,
       "linkType": "WIRED",
       "delay": 0.006110506
     },
@@ -265,7 +265,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 3234.78,
+      "bandwidth": 3234.78,
       "linkType": "WIRELESS",
       "delay": 0.0037799820000000003
     },
@@ -294,7 +294,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 10000.00,
+      "bandwidth": 10000.00,
       "linkType": "WIRED",
       "delay": 0.00832604
     },
@@ -323,7 +323,7 @@
       "sourceCp": null,
       "destinationCp": null,
       "power": null,
-      "bandwith": 10000.00,
+      "bandwidth": 10000.00,
       "linkType": "WIRED",
       "delay": 0.009458743
     }
