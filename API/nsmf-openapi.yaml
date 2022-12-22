@@ -1,0 +1,661 @@
+openapi: 3.0.1
+info:
+  title: ANCHOR NSMF Lifecycle Management API
+  termsOfService: urn:tos
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: "1.1"
+servers:
+- url: /
+tags:
+- name: Network Slice LCM API
+  description: NST  LCM Management API
+paths:
+ 
+  /nsmf/ns/nslcm/networksliceids:
+    get:
+      tags:
+      - Network Slice LCM API
+      summary: Get all the Network Slice Instance IDSs
+      operationId: getNsInstanceIdsUsingGET
+    
+      responses:
+        200:
+          description: The list of Network Slice Instances IDS.
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  type: string
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+  /nsmf/ns/nslcm/ns/nst:
+ 
+    post:
+      tags:
+      - Network Slice LCM API
+      summary: Create Network Slice Instance Identifier from NST
+      operationId: createNsIdUsingPOST
+      
+      
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNsiIdRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/ns/nest:
+ 
+    post:
+      tags:
+      - Network Slice LCM API
+      summary: Create Network Slice Instance Identifier from NEST
+      operationId: createNsIdFromNestUsingPOST
+      
+      
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNsiIdFromNestRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/ns:
+    get:
+      tags:
+      - Network Slice LCM API
+      summary: Get all the Network Slice Instances
+      operationId: getNsInstanceUsingGET_1
+      
+      
+      responses:
+        200:
+          description: The list of Network Slice Instances.
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetworkSliceInstance'
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+    post:
+      tags:
+      - Network Slice LCM API
+      summary: Create Network Slice Instance Identifier
+      operationId: createNsIdFromNstUsingPOST
+      
+      
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNsiIdRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/ns/{nsiId}:
+    get:
+      tags:
+      - Network Slice LCM API
+      summary: 'Get the Network Slice Instance with the specified ID '
+      operationId: getNsInstanceUsingGET
+      parameters:
+     
+      - name: nsiId
+        in: path
+        description: nsiId
+        required: true
+        schema:
+          type: string
+     
+      responses:
+        200:
+          description: The Network Slice Instance.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/NetworkSliceInstance'
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+  /nsmf/ns/nslcm/ns/{nsiId}/action/configure:
+    put:
+      tags:
+      - Network Slice LCM API
+      summary: Update Network Slice Instance Configuration Request
+      operationId: configureNsiUsingPUT
+      parameters:
+      
+      - name: nsiId
+        in: path
+        description: nsiId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateConfigurationRequest'
+            examples:          
+              SliceTransfer:
+                $ref: '#/components/examples/SliceTransfer'
+              GatewaySwitching:
+                $ref: '#/components/examples/GatewaySwitching'
+              ACMConfiguration:
+                $ref: '#/components/examples/ACMConfiguration'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/ns/{nsiId}/action/instantiate:
+    put:
+      tags:
+      - Network Slice LCM API
+      summary: Request Network Slice Instance Instantiation
+      operationId: instantiateNsiUsingPUT
+      parameters:
+      
+      - name: nsiId
+        in: path
+        description: nsiId
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InstantiateNsiRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/ns/{nsiId}/action/terminate:
+    put:
+      tags:
+      - Network Slice LCM API
+      summary: Request Network Slice Instance Termination
+      operationId: terminateNsiUsingPUT
+      parameters:
+    
+      - name: nsiId
+        in: path
+        description: nsiId
+        required: true
+        schema:
+          type: string
+   
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TerminateNsiRequest'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/nss:
+    get:
+      tags:
+      - Network Slice LCM API
+      summary: Get all the Network Slice Subnet Instances
+      operationId: getNssInstanceUsingGET
+      responses:
+        200:
+          description: The list of Network Slice Instances.
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetworkSliceSubnetInstance'
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+  /nsmf/ns/nslcm/nss/{nssiId}/notify:
+    put:
+      tags:
+      - Network Slice LCM API
+      summary: Notify NSS Instance Status Change
+      operationId: notifyNssiStatusChangeUsingPUT
+      parameters:
+     
+      - name: nssiId
+        in: path
+        description: nssiId
+        required: true
+        schema:
+          type: string
+      - name: principal
+        in: query
+        schema:
+          type: object
+      requestBody:
+        description: request
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NsmfNotificationMessage'
+        required: true
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        201:
+          description: Created
+          content: {}
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+      x-codegen-request-body-name: request
+  /nsmf/ns/nslcm/operations:
+    get:
+      tags:
+      - Network Slice LCM API
+      summary: Get Network Slice LCM operations
+      operationId: geOperationsUsingGET
+     
+     
+      responses:
+        200:
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+        401:
+          description: Unauthorized
+          content: {}
+        403:
+          description: Forbidden
+          content: {}
+        404:
+          description: Not Found
+          content: {}
+      deprecated: false
+components:
+  schemas:
+  
+    CreateNsiIdFromNestRequest:
+      title: CreateNsiIdFromNestRequest
+      type: object
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        nestId:
+          type: string
+        vsInstanceId:
+          type: string
+    CreateNsiIdRequest:
+      title: CreateNsiIdRequest
+      type: object
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+        nstId:
+          type: string
+        vsInstanceId:
+          type: string
+    InstantiateNsiRequest:
+      title: InstantiateNsiRequest
+      type: object
+      properties:
+        nsiId:
+          type: string
+          format: uuid
+    NetworkSliceInstance:
+      title: NetworkSliceInstance
+      type: object
+      properties:
+        networkSliceInstanceId:
+          type: string
+          format: uuid
+        networkSliceSubnetIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        status:
+          type: string
+          enum:
+          - CREATED
+          - INSTANTIATING
+          - INSTANTIATED
+          - CONFIGURING
+          - TERMINATING
+          - TERMINATED
+          - FAILED
+          - OTHER
+        vsInstanceId:
+          type: string
+    NetworkSliceSubnetInstance:
+      title: NetworkSliceSubnetInstance
+      type: object
+      properties:
+        currentAllocation:
+          $ref: '#/components/schemas/NssResourceAllocation'
+        networkSliceSubnetInstanceId:
+          type: string
+          format: uuid
+        nsstId:
+          type: string
+        nsstType:
+          type: string
+        status:
+          type: string
+          enum:
+          - CREATED
+          - INSTANTIATING
+          - INSTANTIATED
+          - CONFIGURING
+          - TERMINATING
+          - TERMINATED
+          - FAILED
+          - OTHER
+    NsInfo:
+      title: NsInfo
+      type: object
+      properties:
+        description:
+          type: string
+        nSInstanceId:
+          type: string
+        nsName:
+          type: string
+    NsmfNotificationMessage:
+      title: NsmfNotificationMessage
+      type: object
+      properties:
+        nssiError:
+          type: string
+          enum:
+          - STATUS_TRANSITION
+        nssiId:
+          type: string
+          format: uuid
+        nssiNotifType:
+          type: string
+          enum:
+          - STATUS_CHANGED
+          - ERROR
+        nssiStatus:
+          type: string
+          enum:
+          - NOT_INSTANTIATED
+          - INSTANTIATED
+          - TERMINATED
+          - PURGED
+          - ERROR
+          - INSTANTIATING
+          - UPDATING
+          - TERMINATING
+          - CONFIGURING
+    NssResourceAllocation:
+      title: NssResourceAllocation
+      type: object
+      properties:
+        allocationType:
+          type: string
+          enum:
+          - COMPUTE
+          - TRANSPORT
+          - SDN
+        nsstId:
+          type: string
+    TerminateNsiRequest:
+      title: TerminateNsiRequest
+      type: object
+      properties:
+        nsiId:
+          type: string
+          format: uuid
+    
+   
+    UpdateConfigurationRequest:
+      title: UpdateConfigurationRequest
+      type: object
+      properties:
+        actionType:
+          type: string
+          enum:
+          - SERVICE_FLOW_TRANSFER
+          - SLICE_TRANSFER
+          - SATELLITE_NETWORK_CONFIGURATION
+        nsiId:
+          type: string
+          format: uuid
+        nstId:
+          type: string
+        sliceSubnetType:
+          type: string
+          enum:
+          - CORE
+          - TRANSPORT
+          - RAN
+          - APP
+        transportConfig:
+          $ref: '#/components/schemas/TransportConfiguration'
+    TransportConfiguration:
+      title: TransportConfiguration
+      type: object
+      properties:
+        target:
+          type: string
+          enum:
+          - TERRESTRIAL
+          - SATELLITE
+        satelliteGatewayName:
+          description: the gateway name in Starfish platform
+          type: string
+          enum:
+          - gateway#0
+          - gateway#1
+        acmConfig:
+          description: configuration of the ACM in Starfish platform
+          type: object
+          properties:
+            modcod:
+              type: string
+              enum:
+              - QPSK 1/4
+              - QPSK 1/2
+              - QPSK 5/6
+              - 16APSK 3/4
+  examples:
+    SliceTransfer:
+      value:
+        nsiId: 1df2b8f9-93d1-4d56-9a09-21251af91602
+        sliceSubnetType: TRANSPORT
+        actionType: SLICE_TRANSFER
+        origin: TERRESTRIAL
+        target: SATELLITE
+    GatewaySwitching:
+      value:
+        nsiId: 1df2b8f9-93d1-4d56-9a09-21251af91602
+        sliceSubnetType: TRANSPORT
+        actionType: SATELLITE_NETWORK_CONFIGURATION
+        transportConfig: 
+          { 
+            target: SATELLITE,
+            satelliteGwName: gateway#1
+          }
+    ACMConfiguration:
+      value:
+        nsiId: 1df2b8f9-93d1-4d56-9a09-21251af91602
+        sliceSubnetType: TRANSPORT
+        actionType: SATELLITE_NETWORK_CONFIGURATION
+        transportConfig: 
+          { 
+            target: SATELLITE,
+            acmConfig:
+              { modcod: QPSK 1/4 }
+          }
