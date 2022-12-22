@@ -1,0 +1,259 @@
+swagger: '2.0'
+info:
+  description: Generalized NSSMF NBI
+  version: '1.0'
+  title: Generalized NSSMF NBI
+  termsOfService: urn:tos
+  contact: {}
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+host: localhost:8086
+basePath: /
+tags:
+  - name: Network Sub-Slice Provisioning APIs
+    description: Provisioning Rest Controller
+  - name: Network Sub-Slice Configuration APIs
+    description: Configuration Rest Controller
+paths:
+  /nssmf/provisioning/nss/createnssid:
+    post:
+      tags:
+        - Network Sub-Slice Provisioning APIs
+      summary: createNsId
+      operationId: createNsIdUsingPOST
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/provisioning/nss/{nsiId}/action/instantiate:
+    put:
+      tags:
+        - Network Sub-Slice Provisioning APIs
+      summary: instantiateNsi
+      operationId: instantiateNsiUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/provisioning/nss/{nsiId}/action/modify:
+    put:
+      tags:
+        - Network Sub-Slice Provisioning APIs
+      summary: modifyNsi
+      operationId: modifyNsiUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/provisioning/nss/{nsiId}/action/terminate:
+    put:
+      tags:
+        - Network Sub-Slice Provisioning APIs
+      summary: terminateNsi
+      operationId: terminateNsiUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/configuration/nss/{nsiId}/action/create:
+    put:
+      tags:
+        - Network Sub-Slice Configuration APIs
+      summary: configureNsi
+      operationId: configureNsiUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/configuration/nss/{nsiId}/action/modify:
+    put:
+      tags:
+        - Network Sub-Slice Configuration APIs
+      summary: modifyNsiConf
+      operationId: modifyNsiConfUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+  /nssmf/configuration/nss/{nsiId}/action/remove:
+    put:
+      tags:
+        - Network Sub-Slice Configuration APIs
+      summary: removeNsiConf
+      operationId: removeNsiConfUsingPUT
+      consumes:
+        - application/json
+      produces:
+        - '*/*'
+      parameters:
+        - name: nsiId
+          in: path
+          description: nsiId
+          required: true
+          type: string
+        - in: body
+          name: request
+          description: request
+          required: true
+          schema:
+            type: object
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+      deprecated: false
+
