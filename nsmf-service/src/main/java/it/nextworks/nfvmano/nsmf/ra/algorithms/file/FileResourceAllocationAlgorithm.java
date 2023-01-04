@@ -56,7 +56,7 @@ public class FileResourceAllocationAlgorithm extends BaseResourceAllocationAlgor
             }
 
             defaultResponse =
-                    defaultResponses.stream().filter(r -> request.getNst().getNsst().getNsstId()
+                    defaultResponses.stream().filter(r -> request.getNst().getNsst().getNsstList().get(0).getNsstId()
                             .equals(r.getNsResourceAllocation().getNssResourceAllocations().get(0).getNsstId()))
                             .collect(Collectors.toList()).get(0);
 
