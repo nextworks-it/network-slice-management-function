@@ -1,6 +1,7 @@
 package it.nextworks.nfvmano.nsmf.sbi.specific;
 
 import it.nextworks.nfvmano.libs.ifa.templates.nst.EMBBPerfReq;
+import it.nextworks.nfvmano.libs.ifa.templates.nst.SliceProfile;
 import it.nextworks.nfvmano.libs.vs.common.exceptions.*;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.provisioning.NssmfBaseProvisioningMessage;
 import it.nextworks.nfvmano.libs.vs.common.nssmf.messages.specialized.core.UpfProvisioningPayload;
@@ -30,18 +31,27 @@ public class CoreNssmfRestClient extends NssmfRestClient {
             payload.setNetworkSliceType(internalRequest.getNsst().getType().toString());
             Map<String, Integer> networkSliceParameters = new HashMap<>();
 
-            EMBBPerfReq  perfReq = internalRequest.getNsst().getSliceProfileList().get(0).geteMBBPerfReq().get(0);
+            if(internalRequest.getNsst().getSliceProfileList() != null &&
+                    !internalRequest.getNsst().getSliceProfileList().isEmpty()) {
 
-            networkSliceParameters.put("min_DL_rate", new Integer(perfReq.getExpDataRateDL()-40));
-            networkSliceParameters.put("max_DL_rate", new Integer(perfReq.getExpDataRateDL()+40));
+                SliceProfile sliceProfile = internalRequest.getNsst().getSliceProfileList().get(0);
+                if(sliceProfile.geteMBBPerfReq() != null && !sliceProfile.geteMBBPerfReq().isEmpty()) {
 
-            networkSliceParameters.put("min_UL_rate", new Integer(perfReq.getExpDataRateUL()-10));
-            networkSliceParameters.put("max_UL_rate", new Integer(perfReq.getExpDataRateUL()+10));
+                    EMBBPerfReq perfReq = sliceProfile.geteMBBPerfReq().get(0);
 
-            networkSliceParameters.put("max_latency", new Integer(internalRequest.getNsst().getSliceProfileList().get(0).getLatency()));
-            networkSliceParameters.put("max-jitter", new Integer(internalRequest.getParentNst().getNstServiceProfileList().get(0).getJitter()));
+                    networkSliceParameters.put("min_DL_rate", perfReq.getExpDataRateDL() - 40);
+                    networkSliceParameters.put("max_DL_rate", perfReq.getExpDataRateDL() + 40);
 
-            payload.setNetworkSliceParamters(networkSliceParameters);
+                    networkSliceParameters.put("min_UL_rate", perfReq.getExpDataRateUL() - 10);
+                    networkSliceParameters.put("max_UL_rate", perfReq.getExpDataRateUL() + 10);
+
+                    networkSliceParameters.put("max_latency", internalRequest.getNsst().getSliceProfileList().get(0).getLatency());
+                    networkSliceParameters.put("max-jitter", internalRequest.getParentNst().getNstServiceProfileList().get(0).getJitter());
+
+                    payload.setNetworkSliceParamters(networkSliceParameters);
+                }
+            }
+
             //TODO: add userplane functions from the resource allocation
             Optional<NssResourceAllocation> allocation = raResponse.getNsResourceAllocation().getNssResourceAllocations().stream()
                     .filter(nssA-> nssA.getNsstId().equals(internalRequest.getNsst().getNsstId()))
