@@ -330,14 +330,14 @@ public class NsmfRestController {
 			nsLcmService.notifyNssStatusChange(request);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		} catch (NotExistingEntityException e) {
-			log.error("NSS Status Change Notification failed due to missing elements in DB.");
+			log.error("NSS Status Change Notification failed due to missing elements in DB.", e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 		} catch (MalformattedElementException e) {
-			log.error("NSS Status Change Notification failed due to bad-formatted request.");
+			log.error("NSS Status Change Notification failed due to bad-formatted request.", e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 
 		} catch (Exception e) {
-			log.error("NS instantiation failed due to internal errors.");
+			log.error("NS instantiation failed due to internal errors.",e);
 			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
